@@ -17,11 +17,11 @@ Singleton {
     readonly property string firstLaunchMarkerPath: configDir + "/.firstlaunch"
 
     property bool isFirstLaunch: false
-    property bool checkComplete: false
-    property bool greeterDismissed: false
+    property bool checkComplete: true
+    property bool greeterDismissed: true
     property int requestedStartPage: 0
 
-    readonly property bool shouldShowGreeter: checkComplete && isFirstLaunch && !greeterDismissed
+    readonly property bool shouldShowGreeter: false
 
     signal greeterRequested
     signal greeterCompleted

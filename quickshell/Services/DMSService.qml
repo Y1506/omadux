@@ -35,7 +35,67 @@ Singleton {
     property string mprisCommandLease: ""
     property bool matugenSmartSupported: false
 
-    readonly property string socketPath: Quickshell.env("DMS_SOCKET")
+    property string socketPath: Quickshell.env("DMS_SOCKET") || ""
+
+    Process {
+        id: socketDiscoveryProc
+        command: ["sh", "-c", "for s in \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms*.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/danklinux*.sock; do [ -S \"$s\" ] && echo \"$s\" && exit 0; done; exit 1"]
+        stdout: SplitParser {
+            onRead: line => {
+                const s = line.trim();
+                if (s.length > 0) {
+                    root.applySocket(s);
+                }
+            }
+        }
+    }
+
+    function findSocket() {
+        const envSock = Quickshell.env("DMS_SOCKET");
+        if (envSock && envSock.length > 0) {
+            applySocket(envSock);
+            return;
+        }
+        if (!socketDiscoveryProc.running) {
+            socketDiscoveryProc.running = true;
+        }
+    }
+
+    function applySocket(path) {
+        if (!path || path.length === 0)
+            return;
+        root.socketPath = path;
+        requestSocket.path = path;
+        subscribeSocket.path = path;
+        if (!requestSocket.connected)
+            requestSocket.connected = true;
+    }
+
+    function reconnect() {
+        if (!socketPath || socketPath.length === 0) {
+            findSocket();
+            return;
+        }
+        requestSocket.connected = false;
+        subscribeSocket.connected = false;
+        findSocket();
+        if (socketPath && socketPath.length > 0) {
+            requestSocket.path = socketPath;
+            requestSocket.connected = true;
+        }
+    }
+
+    Timer {
+        id: connectTimer
+        interval: 1000
+        repeat: true
+        running: !root.isConnected && !requestSocket.connected
+        onTriggered: {
+            if (!root.isConnected) {
+                root.reconnect();
+            }
+        }
+    }
 
     property var pendingRequests: ({})
     property var requestTimeouts: ({})
@@ -88,9 +148,7 @@ Singleton {
     property var connectionCapabilities: null
 
     Component.onCompleted: {
-        if (!socketPath || socketPath.length === 0)
-            return;
-        requestSocket.connected = true;
+        findSocket();
     }
 
     DCommon.DSocket {

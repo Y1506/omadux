@@ -19,6 +19,7 @@ Singleton {
     property bool _loading: false
     property bool _hasLoaded: false
     property int _loadedCacheVersion: 0
+    property bool welcomeCompleted: true
 
     readonly property var _pinKeys: ["brightnessDevicePins", "wifiNetworkPins", "bluetoothDevicePins", "audioInputDevicePins", "audioOutputDevicePins"]
     readonly property var _historyKeys: ["browserUsageHistory", "filePickerUsageHistory"]

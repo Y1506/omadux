@@ -47,6 +47,7 @@ fi
 mkdir -p "$HOME/.local/bin"
 chmod +x "$PLUGIN_DIR/scripts/omadux" 2>/dev/null || true
 ln -sf "$PLUGIN_DIR/scripts/omadux" "$HOME/.local/bin/omadux"
+ln -sf "$DMS_BIN" "$HOME/.local/bin/dms"
 
 # Ensure binary is in active plugin runtime path if present
 OMARCHY_PLUGIN_SHARE="$HOME/.local/share/omarchy/plugins/y1506.omadux.bar"

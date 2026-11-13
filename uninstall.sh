@@ -15,6 +15,7 @@ pkill -f "$PLUGIN_DIR/bin/dms run --session" >/dev/null 2>&1 || true
 
 # Remove symlinks & hooks
 rm -f "$HOME/.local/bin/omadux"
+rm -f "$HOME/.local/bin/dms"
 if [[ -L "$HOME/.local/bin/omarchy-lock-screen" ]]; then
     target=$(readlink -f "$HOME/.local/bin/omarchy-lock-screen" 2>/dev/null || true)
     if [[ "$target" == *"$PLUGIN_DIR"* ]]; then

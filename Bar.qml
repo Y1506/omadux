@@ -193,9 +193,14 @@ PanelWindow {
         id: omarchyThemeSync
     }
 
-    // 8. DUX Shell root item
+    // 8. DUX Shell Core & UI
+    ShellCore {
+        id: shellCore
+    }
+
     DMSShell {
         id: dmsShell
+        core: shellCore
         pluginApi: root.pluginApi
     }
 }

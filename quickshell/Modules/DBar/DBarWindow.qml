@@ -12,7 +12,7 @@ PanelWindow {
 
     required property var rootWindow
     required property var barConfig
-    property var modelData: item
+    required property var modelData
 
     property var leftWidgetsModel
     property var centerWidgetsModel

@@ -1415,8 +1415,7 @@ Item {
         }
 
         Component.onCompleted: {
-            if (FirstLaunchService.shouldShowGreeter)
-                active = true;
+            // First-run welcome wizard bypassed by default for Omarchy plugin
         }
 
         Connections {
