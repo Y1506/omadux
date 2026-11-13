@@ -1,0 +1,239 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import Quickshell
+import "../Common"
+import "../Services"
+import "../Common/FluidGeometry.js" as FluidGeometry
+
+Item {
+    id: root
+
+    required property var host
+
+    property bool opened: false
+    property bool closing: false
+    property real shownSheetHeight: sheetHeight
+    readonly property int keyboardFocus: KeyboardFocus.keyboardFocus(opened && !closing)
+    readonly property var blurRegion: blur.effectiveRegion
+
+    anchors.fill: parent
+
+    Behavior on shownSheetHeight {
+        enabled: root.opened && !root.closing && !morph.running && root.animationDuration > 0 && !SettingsData.reduceMotion
+        NumberAnimation {
+            duration: root.animationDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.variantPopoutResizeCurve
+        }
+    }
+
+    readonly property real dpr: host.dpr
+    readonly property int alignX: host.alignX
+    readonly property int alignY: host.alignY
+    readonly property rect compact: Qt.rect(host.alignedX, host.alignedY, host.alignedWidth, host.alignedHeight)
+    readonly property real insetTop: host.edgeInset("top")
+    readonly property real insetBottom: host.edgeInset("bottom")
+    readonly property real insetLeft: host.edgeInset("left")
+    readonly property real insetRight: host.edgeInset("right")
+
+    readonly property real sheetWidth: Theme.px(Math.min(host.sheetWidth, host.screenWidth - insetLeft - insetRight), dpr)
+    readonly property real maxSheetHeight: {
+        switch (alignY) {
+        case -1:
+            return host.screenHeight - compact.y - insetBottom;
+        case 1:
+            return compact.y + compact.height - insetTop;
+        default:
+            return 2 * Math.min(compact.y + compact.height / 2 - insetTop, host.screenHeight - insetBottom - compact.y - compact.height / 2);
+        }
+    }
+    readonly property real sheetHeight: Theme.px(Math.min(maxSheetHeight, sheetBody.item?.implicitHeight ?? compact.height), dpr)
+    readonly property real sheetX: Math.max(insetLeft, Math.min(alongFrom(alignX, compact.x, compact.width, sheetWidth), host.screenWidth - insetRight - sheetWidth))
+    readonly property real sheetY: alongFrom(alignY, compact.y, compact.height, shownSheetHeight)
+
+    readonly property rect sheetRect: Qt.rect(Theme.snap(sheetX, dpr), Theme.snap(sheetY, dpr), sheetWidth, shownSheetHeight)
+
+    readonly property int animationDuration: Theme.popoutAnimationDuration
+    readonly property var springParams: Theme.springPreset("default", animationDuration)
+    readonly property real morphTravelPx: Math.max(1, Math.abs(sheetRect.x - compact.x), Math.abs(sheetRect.y - compact.y), Math.abs(sheetRect.width - compact.width), Math.abs(sheetRect.height - compact.height))
+    readonly property bool morphSettled: !morph.running || Math.abs(morph.value - morph.target) < Theme.morphLayerEpsilon
+    // A fully transparent surface renders no frames, so the spring would never advance to settle.
+    readonly property bool closeFinished: closing && (morphSettled || FluidGeometry.chromeOpacity(morph.value) <= 0)
+    readonly property real morphProgress: morphSettled ? morph.target : morph.value
+    readonly property real progress: Math.max(0, Math.min(1, morphProgress))
+    readonly property rect body: FluidGeometry.limitOvershoot(morphRect(compact, sheetRect, morphProgress), sheetRect, Theme.fluidOvershootLimit)
+    readonly property real surfaceRadius: host.surfaceRadius + (Theme.windowRadius - host.surfaceRadius) * progress
+
+    signal presented
+    signal dismissed
+
+    function alongFrom(align, start, size, target) {
+        switch (align) {
+        case -1:
+            return start;
+        case 1:
+            return start + size - target;
+        default:
+            return start + (size - target) / 2;
+        }
+    }
+
+    function alignIn(align, outer, inner) {
+        switch (align) {
+        case -1:
+            return 0;
+        case 1:
+            return outer - inner;
+        default:
+            return (outer - inner) / 2;
+        }
+    }
+
+    // FluidGeometry only bounds growth; a shrinking axis overshooting its target would crush the fixed-size content.
+    function morphRect(from, to, value) {
+        const grown = FluidGeometry.interpolate(from, to, value);
+        const held = FluidGeometry.interpolate(from, to, Math.min(1, value));
+        const holdX = to.width < from.width;
+        const holdY = to.height < from.height;
+        return Qt.rect(holdX ? held.x : grown.x, holdY ? held.y : grown.y, holdX ? held.width : grown.width, holdY ? held.height : grown.height);
+    }
+
+    function present() {
+        opened = true;
+        presented();
+        morph.retarget(1);
+        keyScope.forceActiveFocus();
+    }
+
+    function close() {
+        if (closing)
+            return;
+        morph.retarget(0);
+        closing = true;
+    }
+
+    onCloseFinishedChanged: {
+        if (closeFinished)
+            dismissed();
+    }
+
+    SpringMotion {
+        id: morph
+        enabled: !Theme.springMotionDisabled
+        reducedMotion: root.animationDuration <= 0 || SettingsData.reduceMotion
+        positionEpsilon: Math.max(0.001, 0.25 / root.dpr / root.morphTravelPx)
+        velocityEpsilon: positionEpsilon * damping / Math.max(0.001, 2 * mass)
+        stiffness: root.springParams.stiffness
+        damping: root.springParams.damping
+
+        Component.onCompleted: snapTo(0)
+    }
+
+    WindowBlur {
+        id: blur
+        targetWindow: root.host.surface
+        applyToWindow: false
+        surfaceColor: Theme.withAlpha(root.host.surfaceColor, Theme.popupTransparency)
+        blurX: surface.x
+        blurY: surface.y
+        blurWidth: surface.opacity < 1 ? 0 : surface.width
+        blurHeight: surface.opacity < 1 ? 0 : surface.height
+        blurRadius: root.surfaceRadius
+    }
+
+    DFocusGrab {
+        windows: [root.host.surface].concat(KeyboardFocus.barWindows)
+        wanted: KeyboardFocus.wantsGrab(root.opened && !root.closing)
+        onCleared: root.close()
+    }
+
+    Connections {
+        target: surface.Window.window
+        enabled: !root.opened
+
+        function onFrameSwapped() {
+            root.present();
+        }
+    }
+
+    FocusScope {
+        id: keyScope
+
+        anchors.fill: parent
+        Keys.onEscapePressed: root.close()
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: root.opened
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+            onClicked: root.close()
+        }
+
+        Item {
+            id: surface
+
+            x: root.body.x
+            y: root.body.y
+            width: root.body.width
+            height: root.body.height
+            opacity: root.closing ? FluidGeometry.chromeOpacity(morph.value) : 1
+
+            ElevationShadow {
+                anchors.fill: parent
+                z: -2
+                level: Theme.elevationLevel2
+                fallbackOffset: Theme.spacingXS
+                targetRadius: root.surfaceRadius
+                targetColor: Theme.withAlpha(root.host.surfaceColor, Theme.popupTransparency)
+                borderColor: Theme.outlineVariant
+                borderWidth: 0
+                shadowEnabled: Theme.elevationEnabled && SettingsData.popoutElevationEnabled && Quickshell.env("DMS_DISABLE_LAYER") !== "true" && Quickshell.env("DMS_DISABLE_LAYER") !== "1"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                onWheel: wheel => wheel.accepted = true
+            }
+
+            Item {
+                anchors.fill: parent
+                clip: true
+
+                Loader {
+                    x: root.alignIn(root.alignX, parent.width, width)
+                    y: root.alignIn(root.alignY, parent.height, height)
+                    width: root.compact.width
+                    height: root.compact.height
+                    sourceComponent: root.host.content
+                    opacity: root.closing ? 0 : 1 - FluidGeometry.chromeOpacity(morph.value)
+                    visible: opacity > 0
+                    enabled: !root.opened
+                }
+
+                Loader {
+                    id: sheetBody
+
+                    x: root.alignIn(root.alignX, parent.width, width)
+                    y: root.alignIn(root.alignY, parent.height, height)
+                    width: root.sheetWidth
+                    height: root.sheetHeight
+                    sourceComponent: root.host.sheet
+                    opacity: FluidGeometry.contentOpacity(root.body, root.sheetRect)
+                    visible: opacity > 0
+                    focus: true
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: sheetBody.item
+        ignoreUnknownSignals: true
+
+        function onCloseRequested() {
+            root.close();
+        }
+    }
+}

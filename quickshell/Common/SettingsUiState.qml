@@ -1,0 +1,46 @@
+pragma Singleton
+
+import QtQuick
+import Quickshell
+import "."
+import "../Services"
+
+Singleton {
+    id: root
+
+    property string selectedBarId: "default"
+    property string selectedWallpaperScreen: ""
+    property string selectedWallpaperFolder: ""
+    readonly property string selectedWallpaperFolderTitle: WallpaperLibraryService.folderName(selectedWallpaperFolder)
+    // Which dock the Dock hub pages are editing.
+    property string dockHubSelection: ""
+    // Set only while the widget settings page is showing a dock-hosted widget; empty means bar-hosted.
+    property string selectedDockId: ""
+    property string selectedDockWidgetId: ""
+    property string selectedDesktopWidgetId: ""
+    property string selectedWidgetSection: ""
+    property int selectedWidgetIndex: -1
+    property string selectedWidgetTitle: ""
+    property string selectedWidgetDescription: ""
+    property string selectedWidgetIcon: ""
+    property string selectedFcitx5Addon: ""
+    property string selectedFcitx5AddonTitle: ""
+    property string selectedFcitx5SubAddon: ""
+    property string selectedFcitx5SubAddonTitle: ""
+
+    // The dot has its own page, so bar selection never lands on it.
+    function normalizeSelectedBar() {
+        const config = SettingsData.getBarConfig(selectedBarId);
+        if (config && !SettingsData.isDotBarConfig(config))
+            return;
+        selectedBarId = SettingsData.barConfigs.find(cfg => !SettingsData.isDotBarConfig(cfg))?.id ?? "default";
+    }
+
+    Connections {
+        target: SettingsData
+
+        function onBarConfigsChanged() {
+            root.normalizeSelectedBar();
+        }
+    }
+}
