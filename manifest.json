@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "y1506.omadux.bar",
+  "name": "Omadux (DUX Shell)",
+  "version": "1.0.0",
+  "author": "Y1506",
+  "license": "GPL-3.0-only",
+  "description": "Hotswappable DUX Shell environment for Omarchy with full hook, keybind, and plugin integration",
+  "kinds": ["bar"],
+  "type": "bar",
+  "entryPoints": {
+    "bar": "Bar.qml"
+  },
+  "entry": {
+    "bar": "Bar.qml"
+  },
+  "repository": "https://github.com/Y1506/omadux",
+  "settings": {
+    "themeMode": "auto",
+    "enableExternalAppTheming": false,
+    "enableKeybindTakeover": true,
+    "enableLockTakeover": true,
+    "enableNotifTakeover": true,
+    "enableOsdTakeover": true
+  }
+}

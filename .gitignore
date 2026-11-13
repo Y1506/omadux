@@ -1,0 +1,7 @@
+# Omadux .gitignore
+bin/*
+!bin/.gitkeep
+*.pyc
+__pycache__/
+.superpowers/sdd/*/briefs/
+.superpowers/sdd/*/packages/
