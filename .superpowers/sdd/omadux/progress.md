@@ -8,3 +8,4 @@ Task 4: complete (handover.py snapshot, watchdog, lock shim, mako/swayosd handov
 Task 5: complete (scripts/omadux sync, omadux.lua, OmarchyThemeSync.qml, enableExternalAppTheming settings gate, and tests/test-omadux-theme.sh passing)
 Task 6: complete (PluginBarFacade.qml, BarWidgetSlot.qml, OmarchyPluginService.qml, OmarchyPlugins.qml, widget host and catalog integration, tests/test-facade.sh passing)
 Task 7: complete (Bar.qml Quattro entry point, IPC routing, service orchestration, root qmldir, and tests/test-root-bar.sh passing)
+Task 8: complete (upstream.lock, scripts/upstream-check, README.md, full test suite passing, git audit clean)
