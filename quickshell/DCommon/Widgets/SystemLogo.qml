@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 import "."
 
 Item {

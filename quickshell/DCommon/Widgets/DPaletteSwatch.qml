@@ -1,5 +1,5 @@
 import QtQuick
-import "../Common"
+import "../../Common"
 
 DColorSwatch {
     property color primaryColor: Style.primary

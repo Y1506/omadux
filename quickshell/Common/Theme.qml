@@ -3,15 +3,15 @@ pragma ComponentBehavior: Bound
 
 import QtCore
 import QtQuick
-import "../DCommon/Common/Shape.js" as Shape
-import "../DCommon/Common/Surface.js" as Surface
-import "../DCommon/Common/Contrast.js" as Contrast
-import "../DCommon/Common/Accents.js" as Accents
-import "../DCommon/Common/Tonal.js" as Tonal
+import "./Shape.js" as Shape
+import "./Surface.js" as Surface
+import "./Contrast.js" as Contrast
+import "./Accents.js" as Accents
+import "./Tonal.js" as Tonal
 import Quickshell
 import Quickshell.Io
 import "."
-import "../DCommon/Common" as DCommon
+import "." as DCommon
 import "../Services"
 import "StockThemes.js" as StockThemes
 import "GSettings.js" as GSettings
@@ -48,7 +48,7 @@ Singleton {
 
     readonly property string homeDir: Paths.strip(StandardPaths.writableLocation(StandardPaths.HomeLocation))
     readonly property string configDir: Paths.strip(StandardPaths.writableLocation(StandardPaths.ConfigLocation))
-    readonly property string shellDir: Paths.strip(Qt.resolvedUrl(".").toString()).replace("/Common/", "")
+    readonly property string shellDir: Paths.shellDir
     readonly property string wallpaperSourceScreen: {
         const screens = Quickshell.screens;
         const target = SettingsData.matugenTargetMonitor;

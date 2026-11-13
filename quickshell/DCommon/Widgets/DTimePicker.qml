@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-import "../Common"
+import "../../Common"
 
 FocusScope {
     id: root

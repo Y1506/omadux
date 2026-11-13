@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Shapes
-import "../Common/TabNavigation.js" as TabNavigation
-import "../Common"
+import "../../Common/TabNavigation.js" as TabNavigation
+import "../../Common"
 
 T.Control {
     id: tabBar

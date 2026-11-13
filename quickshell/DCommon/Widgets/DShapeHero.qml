@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell.Widgets
-import "../Common"
-import "../Common/Contrast.js" as Contrast
+import "../../Common"
+import "../../Common/Contrast.js" as Contrast
 
 Item {
     id: root

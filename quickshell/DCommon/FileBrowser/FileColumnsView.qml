@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import "../Common"
+import "../../Common"
 import "../Widgets"
 import "FileColumnsLayout.js" as Layout
 import "FilePreview.js" as FilePreview

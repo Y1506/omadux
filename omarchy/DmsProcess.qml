@@ -28,8 +28,9 @@ Item {
 
     Process {
         id: proc
-        command: [root.dmsBinary, "run", "--session"]
+        command: [root.dmsBinary, "run", "--session", "--daemon-only"]
         environment: ({
+            "OMADUX_DAEMON_ONLY": "1",
             "OMADUX_DISABLE_EXTERNAL_DEPLOY": root.disableExternalDeploy ? "1" : "0",
             "DMS_SOCKET": root.socketPath
         })

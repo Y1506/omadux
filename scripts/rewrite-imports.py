@@ -58,8 +58,22 @@ def generate_qmldirs(root_dir):
         print(f"Generated {os.path.relpath(qmldir_path, root_dir)}")
 
 
+def fix_unquoted_relative_imports(content):
+    """Ensure any relative directory/file imports in QML/JS are enclosed in double quotes."""
+    unquoted_rel = re.compile(
+        r"^([ \t]*\.?import[ \t]+)(\.\.?[A-Za-z0-9_./\-]+)([ \t]+as[ \t]+[A-Za-z0-9_]+)?",
+        re.MULTILINE,
+    )
+    def repl(m):
+        prefix = m.group(1)
+        path = m.group(2)
+        suffix = m.group(3) or ""
+        return f'{prefix}"{path}"{suffix}'
+    return unquoted_rel.sub(repl, content)
+
+
 def rewrite_file_imports(filepath, root_dir):
-    """Rewrites forbidden qs.* imports in a single .qml file."""
+    """Rewrites forbidden qs.* imports in a single .qml or .js file."""
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
@@ -70,10 +84,16 @@ def rewrite_file_imports(filepath, root_dir):
     file_dir = os.path.dirname(filepath)
     modified = False
 
+    # First fix any unquoted relative imports
+    fixed_unquoted = fix_unquoted_relative_imports(content)
+    if fixed_unquoted != content:
+        content = fixed_unquoted
+        modified = True
+
     def replace_import(match):
         nonlocal modified
         full_match = match.group(0)
-        prefix = match.group(1)  # whitespace
+        prefix = match.group(1)  # whitespace + import/.import
         imported = match.group(2)  # e.g. qs.Common or qs.Common.settings
         suffix = match.group(3) or ""  # e.g. " as DCommon" or ""
 
@@ -101,18 +121,22 @@ def rewrite_file_imports(filepath, root_dir):
             rel_path = "./" + rel_path
 
         modified = True
-        return f'{prefix}import "{rel_path}"{suffix}'
+        return f'{prefix} "{rel_path}"{suffix}'
 
-    # Regex matching: import qs.Foo.Bar (as Alias)?
+    # Regex matching: (import|.import) qs.Foo.Bar (as Alias)?
     import_pattern = re.compile(
-        r"^([ \t]*)import[ \t]+(qs\.[A-Za-z0-9_.]+)([ \t]+as[ \t]+[A-Za-z0-9_]+)?",
+        r"^([ \t]*\.?import[ \t]+)(qs\.[A-Za-z0-9_.]+)([ \t]+as[ \t]+[A-Za-z0-9_]+)?",
         re.MULTILINE,
     )
     new_content = import_pattern.sub(replace_import, content)
 
+    if new_content != content:
+        modified = True
+        content = new_content
+
     if modified:
         with open(filepath, "w", encoding="utf-8") as f:
-            f.write(new_content)
+            f.write(content)
 
 
 def process_tree(root_dir):

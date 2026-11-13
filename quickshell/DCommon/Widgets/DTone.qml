@@ -1,5 +1,5 @@
 import QtQuick
-import "../Common"
+import "../../Common"
 
 QtObject {
     id: root

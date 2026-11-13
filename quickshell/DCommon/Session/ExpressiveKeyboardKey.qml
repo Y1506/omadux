@@ -1,6 +1,6 @@
 import QtQuick
 import "../Widgets"
-import "../Common"
+import "../../Common"
 
 DActionButton {
     id: root

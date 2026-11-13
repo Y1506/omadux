@@ -29,7 +29,7 @@ Singleton {
     readonly property string mediaEndpointIface: "org.bluez.MediaEndpoint1"
     readonly property string objectManagerIface: "org.freedesktop.DBus.ObjectManager"
     readonly property string propertiesIface: "org.freedesktop.DBus.Properties"
-    readonly property string cardProfileScript: Quickshell.shellDir + "/scripts/bluez-card-profile.lua"
+    readonly property string cardProfileScript: Paths.shellDir + "/scripts/bluez-card-profile.lua"
     readonly property bool codecControlAvailable: wpexecChecked && wpexecAvailable
     readonly property var devices: adapter ? adapter.devices : null
     readonly property bool enhancedPairingAvailable: DMSService.dmsAvailable && DMSService.apiVersion >= 9 && DMSService.capabilities.includes("bluetooth")

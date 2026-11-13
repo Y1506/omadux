@@ -1,6 +1,6 @@
 .pragma library
-.import "../../DCommon/Common/settings/SharedSessionSpec.js" as Shared
-.import "../../DCommon/Common/settings/SpecUtil.js" as Util
+.import "SharedSessionSpec.js" as Shared
+.import "SpecUtil.js" as Util
 
 function coerceWallpaperFolders(value) {
     if (!Array.isArray(value))

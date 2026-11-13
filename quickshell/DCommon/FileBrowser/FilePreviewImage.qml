@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import "../Common"
+import "../../Common"
 import "FilePreview.js" as FilePreview
 
 Item {

@@ -1,9 +1,9 @@
-import "../Common/fzf.js" as Fzf
+import "../../Common/fzf.js" as Fzf
 import "ScrollConstants.js" as Scroll
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../Common"
+import "../../Common"
 
 FocusScope {
     id: root

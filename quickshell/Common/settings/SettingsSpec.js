@@ -1,6 +1,6 @@
 .pragma library
-.import "../../DCommon/Common/settings/SharedSettingsSpec.js" as Shared
-.import "../../DCommon/Common/settings/SpecUtil.js" as Util
+.import "SharedSettingsSpec.js" as Shared
+.import "SpecUtil.js" as Util
 .import "DockConfig.js" as DockConfig
 
 function lockWidgetDefaults() {

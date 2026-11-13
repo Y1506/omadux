@@ -2,8 +2,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Templates as T
-import "../Common"
-import "../Common/WheelInput.js" as WheelInput
+import "../../Common"
+import "../../Common/WheelInput.js" as WheelInput
 
 T.Control {
     id: root

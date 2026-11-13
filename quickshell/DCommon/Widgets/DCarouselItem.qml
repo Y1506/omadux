@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 import "Carousel.js" as Carousel
 
 Item {

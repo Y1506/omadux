@@ -1,7 +1,7 @@
 pragma Singleton
 
 import QtQuick
-import "../Common"
+import "../../Common"
 
 QtObject {
     readonly property real clockSize: Style.fontSizeDisplayLarge * 2

@@ -21,6 +21,7 @@ Singleton {
     readonly property url config: `${StandardPaths.standardLocations(StandardPaths.GenericConfigLocation)[0]}/dms`
 
     readonly property url imagecache: `${cache}/imagecache`
+    readonly property string shellDir: Qt.resolvedUrl("..").toString().replace(/^file:\/\//, "").replace(/\/$/, "")
 
     property var iconResolver: null
     property var desktopIconResolver: null

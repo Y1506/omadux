@@ -1,6 +1,6 @@
 import QtQuick
 import "../Widgets"
-import "../Common"
+import "../../Common"
 
 DActionButton {
     radius: Style.buttonRadius(width, height, buttonSize, pressed, circular)

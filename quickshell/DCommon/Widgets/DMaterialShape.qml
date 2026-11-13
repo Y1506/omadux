@@ -1,7 +1,7 @@
 import "MaterialShapes.js" as Shapes
 import QtQuick
 import QtQuick.Shapes
-import "../Common"
+import "../../Common"
 
 Item {
     id: root

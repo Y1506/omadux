@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "../Common"
 
 Singleton {
     id: root
@@ -29,7 +30,7 @@ Singleton {
     Process {
         id: versionDetection
         running: true
-        command: ["sh", "-c", `cd "${Quickshell.shellDir}" || exit 0
+        command: ["sh", "-c", `cd "${Paths.shellDir}" || exit 0
 semver=$(cat VERSION 2>/dev/null); codename=$(cat CODENAME 2>/dev/null)
 if [ -d .git ]; then shell="(git) $(git rev-parse --short HEAD)"; else shell=$semver; fi
 printf '%s\\n%s\\n%s\\n' "$shell" "$semver" "$codename"`]

@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import "../Widgets"
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 
 Rectangle {
     id: root

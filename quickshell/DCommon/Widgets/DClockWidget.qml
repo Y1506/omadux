@@ -1,6 +1,6 @@
 import QtQuick
-import "../Common"
-import "../Common/Hct.js" as Hct
+import "../../Common"
+import "../../Common/Hct.js" as Hct
 
 Item {
     id: root

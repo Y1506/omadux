@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Window
-import "../Common"
-import "../Common/Surface.js" as Surface
+import "../../Common"
+import "../../Common/Surface.js" as Surface
 
 // Fading edges for a vertical Flickable, drawn as gradients in the color of the nearest painted
 // ancestor surface. Each strip ramps in with scroll distance like Android's View fading edge.

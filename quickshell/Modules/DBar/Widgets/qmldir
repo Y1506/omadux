@@ -24,6 +24,7 @@ MonitorPill 1.0 MonitorPill.qml
 NetworkMonitor 1.0 NetworkMonitor.qml
 NotepadButton 1.0 NotepadButton.qml
 NotificationCenterButton 1.0 NotificationCenterButton.qml
+OmarchyPlugins 1.0 OmarchyPlugins.qml
 PowerMenuButton 1.0 PowerMenuButton.qml
 PrivacyIndicator 1.0 PrivacyIndicator.qml
 RamMonitor 1.0 RamMonitor.qml

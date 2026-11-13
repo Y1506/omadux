@@ -20,3 +20,4 @@ SectionOverflow 1.0 SectionOverflow.qml
 SectionSurface 1.0 SectionSurface.qml
 SectionWidget 1.0 SectionWidget.qml
 SideSection 1.0 SideSection.qml
+WidgetHost 1.0 WidgetHost.qml

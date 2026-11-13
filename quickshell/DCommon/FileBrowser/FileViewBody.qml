@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import "../Common"
+import "../../Common"
 import "../Widgets"
 import "TypeAhead.js" as TypeAhead
 import "ListColumns.js" as ListColumns

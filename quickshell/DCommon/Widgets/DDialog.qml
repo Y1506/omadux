@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Window
-import "../Common"
-import "../Common/FocusNavigation.js" as FocusNavigation
+import "../../Common"
+import "../../Common/FocusNavigation.js" as FocusNavigation
 
 FocusScope {
     id: root

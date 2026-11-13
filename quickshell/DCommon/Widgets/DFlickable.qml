@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
-import "../Common"
+import "../../Common"
 import "."
 import "ScrollConstants.js" as Scroll
 import "Reveal.js" as Reveal
-import "../Common/WheelInput.js" as WheelInput
+import "../../Common/WheelInput.js" as WheelInput
 
 Flickable {
     id: flickable

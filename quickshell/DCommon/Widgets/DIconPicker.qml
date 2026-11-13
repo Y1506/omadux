@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
-import "../Common"
+import "../../Common"
 import "."
 
 Rectangle {

@@ -34,13 +34,13 @@ Item {
     IpcHandler {
         target: "plugin:y1506.omadux.bar"
 
-        function toggle(): void {
+        function toggle() {
             if (typeof ModalManager !== "undefined") {
                 ModalManager.toggleDefault();
             }
         }
 
-        function launcher(): void {
+        function launcher() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
                 ModalManager.openLauncher();
             } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
@@ -48,7 +48,7 @@ Item {
             }
         }
 
-        function emoji(): void {
+        function emoji() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openEmoji === "function") {
                 ModalManager.openEmoji();
             } else {
@@ -56,7 +56,7 @@ Item {
             }
         }
 
-        function clipboard(): void {
+        function clipboard() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
                 ModalManager.openClipboard();
             } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
@@ -64,31 +64,31 @@ Item {
             }
         }
 
-        function settings(): void {
+        function settings() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
                 ModalManager.openSettings();
             }
         }
 
-        function session(): void {
+        function session() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openPowerMenu === "function") {
                 ModalManager.openPowerMenu();
             }
         }
 
-        function keybinds(): void {
+        function keybinds() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openKeybinds === "function") {
                 ModalManager.openKeybinds();
             }
         }
 
-        function dnd(): void {
+        function dnd() {
             if (typeof NotificationService !== "undefined") {
                 NotificationService.dnd = !NotificationService.dnd;
             }
         }
 
-        function notifications(): void {
+        function notifications() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openNotifications === "function") {
                 ModalManager.openNotifications();
             } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotifications === "function") {
@@ -96,65 +96,65 @@ Item {
             }
         }
 
-        function dash(): void {
+        function dash() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openDash === "function") {
                 ModalManager.openDash();
             }
         }
 
-        function dashMedia(): void {
+        function dashMedia() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openDashMedia === "function") {
                 ModalManager.openDashMedia();
             }
         }
 
-        function lock(): void {
+        function lock() {
             if (typeof LockService !== "undefined" && typeof LockService.lockSession === "function") {
                 LockService.lockSession();
             }
         }
 
-        function unlock(): void {
+        function unlock() {
             if (typeof LockService !== "undefined" && typeof LockService.unlockSession === "function") {
                 LockService.unlockSession();
             }
         }
 
-        function reloadTheme(): void {
+        function reloadTheme() {
             omarchyThemeSync.syncNow();
         }
 
-        function volUp(): void {
+        function volUp() {
             if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
                 AudioService.increaseVolume();
             }
         }
 
-        function volDown(): void {
+        function volDown() {
             if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
                 AudioService.decreaseVolume();
             }
         }
 
-        function volMute(): void {
+        function volMute() {
             if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
                 AudioService.toggleMute();
             }
         }
 
-        function micMute(): void {
+        function micMute() {
             if (typeof AudioService !== "undefined" && typeof AudioService.toggleMicMute === "function") {
                 AudioService.toggleMicMute();
             }
         }
 
-        function briUp(): void {
+        function briUp() {
             if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
                 BrightnessService.increaseBrightness();
             }
         }
 
-        function briDown(): void {
+        function briDown() {
             if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
                 BrightnessService.decreaseBrightness();
             }

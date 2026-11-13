@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import "../Common"
+import "../../Common"
 import "../Widgets"
 
 StyledButton {

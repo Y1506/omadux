@@ -1,5 +1,5 @@
 import QtQuick
-import "../Common/MaterialWallpaper.js" as MaterialWallpaper
+import "../../Common/MaterialWallpaper.js" as MaterialWallpaper
 
 Canvas {
     id: root

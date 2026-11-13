@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls as Controls
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 
 Controls.Control {
     id: root

@@ -1,5 +1,5 @@
 import QtQuick
-import "../Common"
+import "../../Common"
 
 // Premultiplied-alpha color tween: bind `to`, read `value`. Plain
 // ColorAnimation lerps raw RGBA and flashes when the endpoints differ

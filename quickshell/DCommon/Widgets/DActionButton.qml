@@ -1,6 +1,6 @@
 import QtQuick
-import "../Common"
-import "../Common/Contrast.js" as Contrast
+import "../../Common"
+import "../../Common/Contrast.js" as Contrast
 
 StyledButton {
     id: root

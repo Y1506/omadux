@@ -45,8 +45,14 @@ fi
 
 # Set up CLI helper and hooks
 mkdir -p "$HOME/.local/bin"
-ln -sf "$PLUGIN_DIR/scripts/omadux" "$HOME/.local/bin/omadux"
 chmod +x "$PLUGIN_DIR/scripts/omadux" 2>/dev/null || true
+ln -sf "$PLUGIN_DIR/scripts/omadux" "$HOME/.local/bin/omadux"
+
+# Ensure binary is in active plugin runtime path if present
+OMARCHY_PLUGIN_SHARE="$HOME/.local/share/omarchy/plugins/y1506.omadux.bar"
+mkdir -p "$OMARCHY_PLUGIN_SHARE/bin"
+cp -p "$DMS_BIN" "$OMARCHY_PLUGIN_SHARE/bin/dms"
+chmod +x "$OMARCHY_PLUGIN_SHARE/bin/dms"
 
 HOOKS_DIR="$HOME/.config/omarchy/hooks/theme-set.d"
 mkdir -p "$HOOKS_DIR"

@@ -216,7 +216,7 @@ Scope {
                 return "/etc/pam.d";
             if (userPamWatcher.loaded)
                 return root.userPamDir;
-            return Quickshell.shellDir + "/assets/pam";
+            return Paths.shellDir + "/assets/pam";
         }
 
         onMessageChanged: {
@@ -418,7 +418,7 @@ Scope {
         }
 
         config: AdminPolicy.disableCustomLockPam ? "dankshell-fprint" : "fprint"
-        configDirectory: AdminPolicy.disableCustomLockPam ? "/etc/pam.d" : Quickshell.shellDir + "/assets/pam"
+        configDirectory: AdminPolicy.disableCustomLockPam ? "/etc/pam.d" : Paths.shellDir + "/assets/pam"
 
         onPamMessage: {
             if (attemptStartedAt === 0)
@@ -512,7 +512,7 @@ Scope {
                 const idx = SettingsData.lockU2fPamPath.lastIndexOf("/");
                 return idx > 0 ? SettingsData.lockU2fPamPath.slice(0, idx) : "/";
             }
-            return u2fConfigWatcher.loaded ? "/etc/pam.d" : Quickshell.shellDir + "/assets/pam";
+            return u2fConfigWatcher.loaded ? "/etc/pam.d" : Paths.shellDir + "/assets/pam";
         }
 
         onMessageChanged: {

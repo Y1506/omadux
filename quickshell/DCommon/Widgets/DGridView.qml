@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls
-import "../Common"
+import "../../Common"
 import "."
 import "ScrollConstants.js" as Scroll
 import "Reveal.js" as Reveal
-import "../Common/WheelInput.js" as WheelInput
+import "../../Common/WheelInput.js" as WheelInput
 
 GridView {
     id: gridView

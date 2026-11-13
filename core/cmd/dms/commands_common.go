@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
+	"syscall"
 
 	"github.com/duxlabs-dev/dux-shell/core/internal/log"
 	"github.com/duxlabs-dev/dux-shell/core/internal/plugins"
@@ -763,8 +766,51 @@ func checkAllPluginsCLI() error {
 	return nil
 }
 
+func runDaemonOnly(ctx context.Context) error {
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	backend, err := bootBackend(ctx)
+	if err != nil {
+		return fmt.Errorf("starting backend: %w", err)
+	}
+	defer backend.Close()
+
+	log.Infof("dms daemon-only ready (ipc=%s)", backend.SocketPath())
+
+	if d, ok := backend.(interface{ Done() <-chan error }); ok {
+		select {
+		case <-ctx.Done():
+			log.Infof("dms daemon-only shutting down")
+			return nil
+		case err := <-d.Done():
+			return err
+		}
+	}
+
+	<-ctx.Done()
+	log.Infof("dms daemon-only shutting down")
+	return nil
+}
+
 func getCommonCommands() []*cobra.Command {
 	commands := shellApp.Commands()
+	for _, cmd := range commands {
+		if cmd.Name() == "run" {
+			cmd.Flags().Bool("daemon-only", false, "Run backend services only without spawning UI (for omarchy/quattro plugins)")
+			origRunE := cmd.RunE
+			cmd.RunE = func(c *cobra.Command, args []string) error {
+				daemonOnly, _ := c.Flags().GetBool("daemon-only")
+				if daemonOnly || os.Getenv("OMADUX_DAEMON_ONLY") == "1" {
+					return runDaemonOnly(c.Context())
+				}
+				if origRunE != nil {
+					return origRunE(c, args)
+				}
+				return nil
+			}
+		}
+	}
 	return append(commands, []*cobra.Command{
 		versionCmd,
 		ipcCmd,

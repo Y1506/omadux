@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import "../Common"
+import "../../Common"
 
 Singleton {
     readonly property var legacyKeys: ["sortBy", "sortAscending", "iconSizeIndex"]

@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import "../Common"
+import "../../Common"
 
 Singleton {
     function size(bytes) {

@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Templates as T
-import "../Common"
+import "../../Common"
 
 T.Control {
     id: root

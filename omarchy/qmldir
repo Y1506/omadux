@@ -1,4 +1,4 @@
-module omarchy
+# Generated for omarchy
 DmsProcess 1.0 DmsProcess.qml
 Handover 1.0 Handover.qml
 KbService 1.0 KbService.qml

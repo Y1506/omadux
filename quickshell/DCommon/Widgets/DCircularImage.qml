@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Window
 import Quickshell.Io
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 import "."
 
 Rectangle {

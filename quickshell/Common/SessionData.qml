@@ -8,9 +8,9 @@ import Quickshell.Io
 import "."
 import "../Services"
 import "settings/SessionSpec.js" as Spec
-import "../DCommon/Common/MaterialWallpaper.js" as MaterialWallpaper
+import "./MaterialWallpaper.js" as MaterialWallpaper
 import "settings/SessionStore.js" as Store
-import "../DCommon/Common/settings/SpecUtil.js" as SpecUtil
+import "./settings/SpecUtil.js" as SpecUtil
 
 Singleton {
     id: root

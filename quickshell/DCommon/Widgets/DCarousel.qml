@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import "../Common"
+import "../../Common"
 import "Carousel.js" as Carousel
-import "../Common/WheelInput.js" as WheelInput
+import "../../Common/WheelInput.js" as WheelInput
 
 ListView {
     id: root

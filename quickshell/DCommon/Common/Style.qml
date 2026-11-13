@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "../../Common"
 import "Shape.js" as Shape
 import "Surface.js" as Surface
 import "Contrast.js" as Contrast
@@ -33,8 +34,8 @@ Singleton {
         VeryHigh
     }
 
-    property var theme: null
-    property var settings: null
+    property var theme: Theme
+    property var settings: SettingsData
 
     readonly property bool isLightMode: theme?.isLightMode ?? false
 

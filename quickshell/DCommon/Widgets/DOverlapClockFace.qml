@@ -3,8 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Shapes
 import QtQuick.Window
-import "../Common"
-import "../Common/Hct.js" as Hct
+import "../../Common"
+import "../../Common/Hct.js" as Hct
 
 Item {
     id: root

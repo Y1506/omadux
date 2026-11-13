@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell.Widgets
-import "../Common"
+import "../../Common"
 import "../Widgets" as Base
 
 Rectangle {

@@ -1,5 +1,5 @@
 .pragma library
-.import "../DCommon/Common/fzf.js" as Fzf
+.import "fzf.js" as Fzf
 
 const Tier = {
     exact: 10000,

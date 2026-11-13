@@ -1,5 +1,5 @@
 import QtQuick
-import "../Common"
+import "../../Common"
 
 DTextField {
     fieldHeight: Style.fieldHeightLarge

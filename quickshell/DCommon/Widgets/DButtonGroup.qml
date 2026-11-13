@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import Quickshell
-import "../Common"
+import "../../Common"
 
 Row {
     id: root
