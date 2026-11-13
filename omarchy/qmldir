@@ -5,3 +5,4 @@ KbService 1.0 KbService.qml
 NotifHandover 1.0 NotifHandover.qml
 OsdHandover 1.0 OsdHandover.qml
 LockHandover 1.0 LockHandover.qml
+OmarchyThemeSync 1.0 OmarchyThemeSync.qml

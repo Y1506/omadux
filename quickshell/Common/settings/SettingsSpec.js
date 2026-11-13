@@ -31,6 +31,21 @@ function controlCenterEditLayout(v) {
 }
 
 var LOCAL_SPEC = {
+    enableExternalAppTheming: {
+        def: false
+    },
+    enableKeybindTakeover: {
+        def: true
+    },
+    enableLockTakeover: {
+        def: true
+    },
+    enableNotifTakeover: {
+        def: true
+    },
+    enableOsdTakeover: {
+        def: true
+    },
     dockConfigs: {
         def: [DockConfig.create("dock", "Dock")]
     },

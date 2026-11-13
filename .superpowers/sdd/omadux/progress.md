@@ -5,3 +5,4 @@ Task 1: complete (manifest, dms build, OMADUX_DISABLE_EXTERNAL_DEPLOY patch, tes
 Task 2: complete (quickshell and DCommon vendored, imports rewritten to relative paths, qmldirs generated, tests/test-imports.sh passing)
 Task 3: complete (omarchy/DmsProcess.qml implemented, dms session supervision and clean teardown verified, tests/test-dms-process.sh passing)
 Task 4: complete (handover.py snapshot, watchdog, lock shim, mako/swayosd handovers, KbService, and tests/test-restore.sh passing)
+Task 5: complete (scripts/omadux sync, omadux.lua, OmarchyThemeSync.qml, enableExternalAppTheming settings gate, and tests/test-omadux-theme.sh passing)

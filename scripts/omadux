@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""scripts/omadux — Theme & wallpaper synchronizer for Omadux.
+Converts Omarchy's colors.toml into a DUX-compatible Material 3 / Dank16 theme JSON.
+"""
+
+import json
+import os
+import re
+import sys
+
+
+def parse_simple_toml(content):
+    """Parses simple key = "value" pairs from a TOML string."""
+    data = {}
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = re.match(r'^([a-zA-Z0-9_]+)\s*=\s*["\']?([^"\']+)["\']?$', line)
+        if m:
+            data[m.group(1)] = m.group(2).strip()
+    return data
+
+
+def hex_to_rgb(hex_str):
+    hex_str = hex_str.lstrip("#")
+    if len(hex_str) == 3:
+        hex_str = "".join(c * 2 for c in hex_str)
+    return tuple(int(hex_str[i : i + 2], 16) for i in (0, 2, 4))
+
+
+def rgb_to_hex(rgb):
+    return "#{:02x}{:02x}{:02x}".format(*rgb)
+
+
+def adjust_color(hex_str, factor):
+    """Adjusts luminance: factor > 1 lightens, factor < 1 darkens."""
+    try:
+        r, g, b = hex_to_rgb(hex_str)
+        r = min(255, max(0, int(r * factor)))
+        g = min(255, max(0, int(g * factor)))
+        b = min(255, max(0, int(b * factor)))
+        return rgb_to_hex((r, g, b))
+    except Exception:
+        return hex_str
+
+
+def get_contrast_text(bg_hex):
+    try:
+        r, g, b = hex_to_rgb(bg_hex)
+        # Relative luminance
+        lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+        return "#000000" if lum > 0.5 else "#ffffff"
+    except Exception:
+        return "#ffffff"
+
+
+def build_theme(colors):
+    primary = colors.get("accent", "#f0913f")
+    bg = colors.get("background", "#05090a")
+    fg = colors.get("foreground", "#c3d2d0")
+    dark_bg = colors.get("dark_background", adjust_color(bg, 0.8))
+    lighter_bg = colors.get("lighter_background", adjust_color(bg, 1.4))
+    muted = colors.get("muted", "#617877")
+    selection = colors.get("selection", "#1c2f33")
+
+    dark_theme = {
+        "name": "Omarchy Auto",
+        "primary": primary,
+        "primaryText": get_contrast_text(primary),
+        "primaryContainer": adjust_color(primary, 0.5),
+        "secondary": adjust_color(primary, 1.1),
+        "surface": bg,
+        "surfaceText": fg,
+        "surfaceVariant": selection,
+        "surfaceVariantText": fg,
+        "surfaceTint": primary,
+        "background": bg,
+        "backgroundText": fg,
+        "outline": muted,
+        "surfaceContainerLowest": dark_bg,
+        "surfaceContainerLow": adjust_color(bg, 0.9),
+        "surfaceContainer": bg,
+        "surfaceContainerHigh": lighter_bg,
+        "surfaceContainerHighest": adjust_color(lighter_bg, 1.2),
+    }
+
+    # Generate a complementary light variant
+    light_bg = "#fbfdfd"
+    light_fg = "#191c1d"
+    light_theme = {
+        "name": "Omarchy Auto Light",
+        "primary": adjust_color(primary, 0.9),
+        "primaryText": "#ffffff",
+        "primaryContainer": adjust_color(primary, 1.3),
+        "secondary": primary,
+        "surface": light_bg,
+        "surfaceText": light_fg,
+        "surfaceVariant": "#dbe4e6",
+        "surfaceVariantText": "#3f484a",
+        "surfaceTint": primary,
+        "background": light_bg,
+        "backgroundText": light_fg,
+        "outline": muted,
+        "surfaceContainerLowest": "#ffffff",
+        "surfaceContainerLow": "#f5f7f8",
+        "surfaceContainer": "#eff1f2",
+        "surfaceContainerHigh": "#e9ebec",
+        "surfaceContainerHighest": "#e3e5e6",
+    }
+
+    theme_payload = {
+        "id": "omarchy-theme",
+        "name": "Omarchy Theme",
+        "dark": dark_theme,
+        "light": light_theme,
+        "dank16": {
+            "color0": colors.get("background", "#05090a"),
+            "color1": colors.get("red", "#d2705c"),
+            "color2": colors.get("green", "#86a68f"),
+            "color3": colors.get("yellow", "#c9a878"),
+            "color4": colors.get("blue", "#8299aa"),
+            "color5": colors.get("magenta", "#b58c99"),
+            "color6": colors.get("cyan", "#7ba6a3"),
+            "color7": colors.get("foreground", "#c3d2d0"),
+            "color8": colors.get("muted", "#617877"),
+            "color9": colors.get("bright_red", colors.get("red", "#e88a75")),
+            "color10": colors.get("bright_green", colors.get("green", "#a1c0aa")),
+            "color11": colors.get("bright_yellow", colors.get("yellow", "#dcc294")),
+            "color12": colors.get("bright_blue", colors.get("blue", "#98b0c2")),
+            "color13": colors.get("bright_magenta", colors.get("magenta", "#cba3b0")),
+            "color14": colors.get("bright_cyan", colors.get("cyan", "#93bebb")),
+            "color15": colors.get("bright_foreground", "#f4faf8"),
+        },
+    }
+    return theme_payload
+
+
+def sync_theme():
+    colors_path = os.environ.get(
+        "OMADUX_COLORS_PATH",
+        os.path.expanduser("~/.config/omarchy/current/theme/colors.toml"),
+    )
+    cache_dir = os.environ.get(
+        "OMADUX_CACHE_DIR",
+        os.path.expanduser("~/.cache/DankMaterialShell"),
+    )
+    os.makedirs(cache_dir, exist_ok=True)
+    out_file = os.path.join(cache_dir, "omarchy-theme.json")
+
+    colors = {}
+    if os.path.exists(colors_path):
+        try:
+            with open(colors_path, "r", encoding="utf-8") as f:
+                colors = parse_simple_toml(f.read())
+        except Exception as e:
+            print(f"Warning: could not read {colors_path}: {e}", file=sys.stderr)
+
+    theme_data = build_theme(colors)
+    tmp_file = out_file + ".tmp"
+    with open(tmp_file, "w", encoding="utf-8") as f:
+        json.dump(theme_data, f, indent=2)
+    os.replace(tmp_file, out_file)
+    print(f"omadux: generated custom theme at {out_file}")
+    return 0
+
+
+def main():
+    action = sys.argv[1] if len(sys.argv) > 1 else "sync"
+    if action == "sync":
+        sys.exit(sync_theme())
+    elif action == "path":
+        print(os.path.expanduser("~/.cache/DankMaterialShell/omarchy-theme.json"))
+        sys.exit(0)
+    else:
+        print(f"Usage: omadux {{sync|path}}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

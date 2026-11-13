@@ -162,6 +162,11 @@ Singleton {
     }
 
     property string currentThemeName: Spec.SPEC.currentThemeName.def
+    property bool enableExternalAppTheming: Spec.SPEC.enableExternalAppTheming ? Spec.SPEC.enableExternalAppTheming.def : false
+    property bool enableKeybindTakeover: Spec.SPEC.enableKeybindTakeover ? Spec.SPEC.enableKeybindTakeover.def : true
+    property bool enableLockTakeover: Spec.SPEC.enableLockTakeover ? Spec.SPEC.enableLockTakeover.def : true
+    property bool enableNotifTakeover: Spec.SPEC.enableNotifTakeover ? Spec.SPEC.enableNotifTakeover.def : true
+    property bool enableOsdTakeover: Spec.SPEC.enableOsdTakeover ? Spec.SPEC.enableOsdTakeover.def : true
     property string currentThemeCategory: Spec.SPEC.currentThemeCategory.def
     property string customThemeFile: Spec.SPEC.customThemeFile.def
     property var registryThemeVariants: Spec.SPEC.registryThemeVariants.def
