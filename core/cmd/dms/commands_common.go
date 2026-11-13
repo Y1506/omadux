@@ -798,6 +798,17 @@ func getCommonCommands() []*cobra.Command {
 	for _, cmd := range commands {
 		if cmd.Name() == "run" {
 			cmd.Flags().Bool("daemon-only", false, "Run backend services only without spawning UI (for omarchy/quattro plugins)")
+			origPreRunE := cmd.PreRunE
+			cmd.PreRunE = func(c *cobra.Command, args []string) error {
+				daemonOnly, _ := c.Flags().GetBool("daemon-only")
+				if daemonOnly || os.Getenv("OMADUX_DAEMON_ONLY") == "1" {
+					return nil
+				}
+				if origPreRunE != nil {
+					return origPreRunE(c, args)
+				}
+				return nil
+			}
 			origRunE := cmd.RunE
 			cmd.RunE = func(c *cobra.Command, args []string) error {
 				daemonOnly, _ := c.Flags().GetBool("daemon-only")

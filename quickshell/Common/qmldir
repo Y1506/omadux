@@ -30,6 +30,7 @@ singleton ImageCacheIndex 1.0 ImageCacheIndex.qml
 singleton IslandHostRegistry 1.0 IslandHostRegistry.qml
 singleton KeyboardFocus 1.0 KeyboardFocus.qml
 singleton LayerShell 1.0 LayerShell.qml
+singleton Log 1.0 Log.qml
 singleton MediaOptions 1.0 MediaOptions.qml
 singleton ModalManager 1.0 ModalManager.qml
 singleton OSDManager 1.0 OSDManager.qml

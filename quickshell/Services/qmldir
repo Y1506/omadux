@@ -38,6 +38,7 @@ IslandActivitySession 1.0 IslandActivitySession.qml
 singleton KeybindsService 1.0 KeybindsService.qml
 singleton KeyboardLayoutService 1.0 KeyboardLayoutService.qml
 singleton LabwcService 1.0 LabwcService.qml
+LazyService 1.0 LazyService.qml
 singleton LocationService 1.0 LocationService.qml
 singleton LockPlacementService 1.0 LockPlacementService.qml
 singleton Log 1.0 Log.qml

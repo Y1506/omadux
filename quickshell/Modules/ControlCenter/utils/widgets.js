@@ -1,6 +1,3 @@
-.import "../../../Common" as Common
-.import "../../../Services" as Services
-.import ".." as ControlCenter
 .import "../../../Common/GridLayout.js" as GridLayout
 .import "../../../Common/settings/SettingsSpec.js" as Spec
 .import "catalog.js" as Catalog
@@ -54,19 +51,19 @@ function isRemovable(widget) {
 
 // A saved list without the pencil gets it back whatever state the migration left it in.
 function ensureEditButton() {
-    const widgets = Common.SettingsData.controlCenterWidgets;
+    const widgets = SettingsData.controlCenterWidgets;
     if (!Array.isArray(widgets) || widgets.some(widget => widget?.id === EDIT_ID))
         return;
     const fallback = Spec.SPEC.controlCenterWidgets.def.find(widget => widget.id === EDIT_ID);
-    Common.SettingsData.set("controlCenterWidgets", widgets.concat([Object.assign({}, fallback)]));
+    SettingsData.set("controlCenterWidgets", widgets.concat([Object.assign({}, fallback)]));
 }
 
 function isShown(widget) {
     switch (widget?.id) {
     case "battery":
-        return Services.BatteryService.batteryAvailable || Services.PowerProfileWatcher.available;
+        return BatteryService.batteryAvailable || PowerProfileWatcher.available;
     case "diskUsage":
-        return Services.DgopService.dgopAvailable;
+        return DgopService.dgopAvailable;
     default:
         return true;
     }
@@ -105,10 +102,10 @@ function sizeSpec(widget, columns, rows = Infinity) {
         "maxW": columns,
         "minH": 1,
         "maxH": rows,
-        "step": ControlCenter.CcMetrics.gridStep
+        "step": CcMetrics.gridStep
     };
     if (widget?.id === "user")
-        spec.w = (Number.isFinite(columns) ? columns : ControlCenter.CcMetrics.defaultColumns) - ACTION_IDS.length;
+        spec.w = (Number.isFinite(columns) ? columns : CcMetrics.defaultColumns) - ACTION_IDS.length;
     if (BUTTON_IDS.includes(widget?.id))
         spec.w = 1;
     return spec;
@@ -157,12 +154,12 @@ function newWidget(widgetId, columns) {
 // `base` replaces the saved list, so a drop can commit the grid's rearranged layout together with the new tile.
 // `room` is the free run of columns at the spot; the tile narrows into it instead of sliding below.
 function addWidget(widgetId, columns, col, row, base, page, room) {
-    const widgets = (base ?? Common.SettingsData.controlCenterWidgets).slice();
+    const widgets = (base ?? SettingsData.controlCenterWidgets).slice();
     const widget = Pages.withPage(newWidget(widgetId, columns), Number.isInteger(page) ? page : 0);
     if (Number.isFinite(col) && Number.isFinite(row))
         Object.assign(widget, placedInRoom(widget, columns, col, row, room));
     widgets.push(widget);
-    Common.SettingsData.set("controlCenterWidgets", widgets);
+    SettingsData.set("controlCenterWidgets", widgets);
 }
 
 // The size clamp only ever narrows a fitted width further, so the tile stays inside the room.
@@ -188,11 +185,11 @@ function generateUniqueId() {
 }
 
 function removeWidget(index) {
-    const widgets = Common.SettingsData.controlCenterWidgets.slice();
+    const widgets = SettingsData.controlCenterWidgets.slice();
     if (index < 0 || index >= widgets.length || !isRemovable(widgets[index]))
         return;
     const [removed] = widgets.splice(index, 1);
-    Common.SettingsData.set("controlCenterWidgets", removed.id === GROUP_ID ? ungroup(widgets, removed.instanceId, Pages.pageOf(removed)) : widgets);
+    SettingsData.set("controlCenterWidgets", removed.id === GROUP_ID ? ungroup(widgets, removed.instanceId, Pages.pageOf(removed)) : widgets);
 }
 
 function ungroup(widgets, groupId, page) {
@@ -206,22 +203,22 @@ function ungroup(widgets, groupId, page) {
 }
 
 function moveToPage(index, page, base, cell) {
-    const widgets = base ?? Common.SettingsData.controlCenterWidgets;
+    const widgets = base ?? SettingsData.controlCenterWidgets;
     const moved = Pages.movedToPage(widgets, index, page, cell);
     if (moved !== widgets)
-        Common.SettingsData.set("controlCenterWidgets", moved);
+        SettingsData.set("controlCenterWidgets", moved);
 }
 
 function compactPages(isShown) {
-    const widgets = Common.SettingsData.controlCenterWidgets;
+    const widgets = SettingsData.controlCenterWidgets;
     const compacted = Pages.compactPages(widgets, isShown);
     if (compacted !== widgets)
-        Common.SettingsData.set("controlCenterWidgets", compacted);
+        SettingsData.set("controlCenterWidgets", compacted);
 }
 
 // Lands just before `beforeIndex`, or after the group's last member.
 function moveToGroup(index, groupId, beforeIndex) {
-    const widgets = Common.SettingsData.controlCenterWidgets.slice();
+    const widgets = SettingsData.controlCenterWidgets.slice();
     const widget = widgets[index];
     if (!widget || !canGroup(widget))
         return;
@@ -237,7 +234,7 @@ function moveToGroup(index, groupId, beforeIndex) {
     delete moved.col;
     delete moved.row;
     widgets.splice(at, 0, moved);
-    Common.SettingsData.set("controlCenterWidgets", widgets);
+    SettingsData.set("controlCenterWidgets", widgets);
 }
 
 function placeFromGroup(widgets, index, col, row) {
@@ -252,23 +249,23 @@ function placeFromGroup(widgets, index, col, row) {
 }
 
 function setOption(index, key, value) {
-    const widgets = Common.SettingsData.controlCenterWidgets.slice();
+    const widgets = SettingsData.controlCenterWidgets.slice();
     if (index < 0 || index >= widgets.length)
         return;
     widgets[index] = Object.assign({}, widgets[index], {
         [key]: value
     });
-    Common.SettingsData.set("controlCenterWidgets", widgets);
+    SettingsData.set("controlCenterWidgets", widgets);
 }
 
 function setLayout(widgets) {
-    Common.SettingsData.set("controlCenterWidgets", widgets);
+    SettingsData.set("controlCenterWidgets", widgets);
 }
 
 function resetToDefault() {
-    Common.SettingsData.resetToDefault(["controlCenterWidgets", "controlCenterColumns"]);
+    SettingsData.resetToDefault(["controlCenterWidgets", "controlCenterColumns"]);
 }
 
 function clearAll() {
-    Common.SettingsData.set("controlCenterWidgets", Common.SettingsData.controlCenterWidgets.filter(widget => !isRemovable(widget)).map(widget => Pages.withPage(widget, 0)));
+    SettingsData.set("controlCenterWidgets", SettingsData.controlCenterWidgets.filter(widget => !isRemovable(widget)).map(widget => Pages.withPage(widget, 0)));
 }

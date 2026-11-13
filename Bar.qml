@@ -2,8 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import qs.Core
-import qs.Ui
+import qs.Commons
 import "./omarchy"
 import "./quickshell"
 import "./quickshell/Common"
@@ -11,23 +10,21 @@ import "./quickshell/Services"
 import "./quickshell/Modals"
 import "./quickshell/Modules"
 
-Item {
+PanelWindow {
     id: root
 
     property var pluginApi: null
 
-    // Anchor surface for Quattro bar loader contract
-    PanelWindow {
-        id: anchorSurface
-        width: 1
-        height: 1
-        color: "transparent"
-        visible: true
-        anchors {
-            top: true
-            left: true
-        }
-        exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.namespace: "omadux-anchor"
+    WlrLayershell.exclusionMode: ExclusionMode.Ignore
+    mask: Region {}
+    implicitWidth: 1
+    implicitHeight: 1
+    color: "transparent"
+    visible: true
+    anchors {
+        top: true
+        left: true
     }
 
     // Quattro & Omarchy CLI IPC Router
