@@ -15,6 +15,9 @@ Singleton {
     property bool respectInhibitors: true
 
     readonly property bool externalInhibitActive: DMSService.screensaverInhibited
+    readonly property bool fullscreenInhibitActive: CompositorService.activeWindowFullscreen
+    readonly property bool mediaInhibitActive: MprisController.isPlaying
+    readonly property bool autoInhibitActive: fullscreenInhibitActive || mediaInhibitActive
 
     readonly property bool isOnBattery: BatteryService.batteryAvailable && !BatteryService.isPluggedIn
     readonly property int monitorTimeout: isOnBattery ? SettingsData.batteryMonitorTimeout : SettingsData.acMonitorTimeout
@@ -26,6 +29,7 @@ Singleton {
 
     onEnabledChanged: _applyMonitorEnableds()
     onPostLockMonitorActiveChanged: _applyMonitorEnableds()
+    onAutoInhibitActiveChanged: _applyMonitorEnableds()
     onMonitorTimeoutChanged: _rearmIdleMonitors()
     onLockTimeoutChanged: _rearmIdleMonitors()
     onSuspendTimeoutChanged: _rearmIdleMonitors()
@@ -37,7 +41,7 @@ Singleton {
         // compositor honoring the bar-surface zwp_idle_inhibit inhibitor,
         // which goes inactive whenever the bar surface is occluded
         // (fullscreen windows) or hidden (auto-hide).
-        const base = enabled && !SessionService.idleInhibited && !externalInhibitActive;
+        const base = enabled && !SessionService.idleInhibited && !externalInhibitActive && !autoInhibitActive;
         monitorOffMonitor.enabled = base && monitorTimeout > 0 && !postLockMonitorActive;
         postLockMonitorOffMonitor.enabled = enabled && postLockMonitorActive;
         lockMonitor.enabled = base && lockTimeout > 0;

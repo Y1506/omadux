@@ -124,10 +124,8 @@ Singleton {
     }
 
     Component.onCompleted: {
-        Proc.runCommand("matugenCheck", ["sh", "-c", "command -v matugen"], (output, code) => {
-            matugenAvailable = (code === 0) && !envDisableMatugen;
-            generateSystemThemesFromCurrentTheme();
-        }, 0);
+        matugenAvailable = !envDisableMatugen;
+        generateSystemThemesFromCurrentTheme();
         if (typeof SessionData !== "undefined") {
             SessionData.isLightModeChanged.connect(root.onLightModeChanged);
         }

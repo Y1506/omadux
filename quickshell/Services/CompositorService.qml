@@ -33,6 +33,7 @@ Singleton {
     onGenericPowerBackendChanged: probeOutputPower()
 
     readonly property bool inOverview: (isHyprland && HyprlandService.inOverview) || (isNiri && NiriService.inOverview) || (isMango && MangoService.inOverview)
+    readonly property bool activeWindowFullscreen: !!ToplevelManager.activeToplevel?.fullscreen
 
     function probeOutputPower() {
         outputPowerAvailable = false;

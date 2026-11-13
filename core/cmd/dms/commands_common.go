@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/duxlabs-dev/dux-shell/core/internal/log"
 	"github.com/duxlabs-dev/dux-shell/core/internal/plugins"
@@ -15,6 +18,7 @@ import (
 	"github.com/duxlabs-dev/dux-shell/core/internal/server/sysupdate"
 	"github.com/duxlabs-dev/dux-shell/core/internal/shellembed"
 	"github.com/duxlabs-dev/dux-shell/core/internal/site"
+	"github.com/duxlabs-dev/dux-shell/core/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -766,9 +770,36 @@ func checkAllPluginsCLI() error {
 	return nil
 }
 
+func cleanStaleSockets(runtimeDir string) {
+	entries, err := os.ReadDir(runtimeDir)
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".sock") {
+			continue
+		}
+		if name == "dms.sock" || strings.HasPrefix(name, "dms-") || strings.HasPrefix(name, "danklinux-") {
+			sockPath := filepath.Join(runtimeDir, name)
+			// Probe if socket is actively responding
+			conn, err := net.DialTimeout("unix", sockPath, 200*time.Millisecond)
+			if err != nil {
+				// Dead or stale socket -> remove it
+				_ = os.Remove(sockPath)
+			} else {
+				_ = conn.Close()
+			}
+		}
+	}
+}
+
 func runDaemonOnly(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+
+	runtimeDir := utils.RuntimeDir()
+	cleanStaleSockets(runtimeDir)
 
 	backend, err := bootBackend(ctx)
 	if err != nil {
@@ -776,7 +807,18 @@ func runDaemonOnly(ctx context.Context) error {
 	}
 	defer backend.Close()
 
-	log.Infof("dms daemon-only ready (ipc=%s)", backend.SocketPath())
+	sockPath := backend.SocketPath()
+	log.Infof("dms daemon-only ready (ipc=%s)", sockPath)
+
+	symlinkPath := filepath.Join(runtimeDir, "dms.sock")
+	if symlinkPath != sockPath {
+		_ = os.Remove(symlinkPath)
+		if err := os.Symlink(sockPath, symlinkPath); err != nil {
+			log.Warnf("Failed to create dms.sock symlink: %v", err)
+		} else {
+			defer os.Remove(symlinkPath)
+		}
+	}
 
 	if d, ok := backend.(interface{ Done() <-chan error }); ok {
 		select {

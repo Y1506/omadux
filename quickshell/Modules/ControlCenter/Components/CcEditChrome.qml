@@ -1,5 +1,6 @@
 import QtQuick
 import "../../../Common"
+import "../../../Services"
 import "../../../Widgets"
 import "../utils/widgets.js" as WidgetUtils
 import ".."

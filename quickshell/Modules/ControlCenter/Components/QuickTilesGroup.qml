@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import "../../../Common"
+import "../../../Services"
 import ".."
 import "../../../DCommon/Widgets"
 import "../utils/widgets.js" as WidgetUtils

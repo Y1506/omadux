@@ -24,6 +24,7 @@ Singleton {
         });
     }
     property MprisPlayer activePlayer: null
+    readonly property bool isPlaying: activePlayer?.isPlaying ?? false
     property string pinnedIdentity: SessionData.pinnedPlayerIdentity || ""
     property real activePlayerStableLength: 0
     // Chromium can report blank metadata between tracks

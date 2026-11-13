@@ -6,6 +6,9 @@ import "../quickshell/Common"
 Item {
     id: root
 
+    property var pluginApi: null
+    onPluginApiChanged: if (pluginApi) applyBinds()
+
     readonly property bool enabled: typeof SettingsData === "undefined" || SettingsData.enableKeybindTakeover
 
     readonly property var takenBinds: [

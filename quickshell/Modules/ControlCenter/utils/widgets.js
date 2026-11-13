@@ -49,21 +49,44 @@ function isRemovable(widget) {
     return widget?.id !== EDIT_ID;
 }
 
+function _getSettingsData() {
+    try {
+        if (typeof SettingsData !== "undefined")
+            return SettingsData;
+    } catch (e) {}
+    return null;
+}
+
 // A saved list without the pencil gets it back whatever state the migration left it in.
-function ensureEditButton() {
-    const widgets = SettingsData.controlCenterWidgets;
+function ensureEditButton(sd) {
+    const settings = sd ?? _getSettingsData();
+    if (!settings)
+        return;
+    const widgets = settings.controlCenterWidgets;
     if (!Array.isArray(widgets) || widgets.some(widget => widget?.id === EDIT_ID))
         return;
     const fallback = Spec.SPEC.controlCenterWidgets.def.find(widget => widget.id === EDIT_ID);
-    SettingsData.set("controlCenterWidgets", widgets.concat([Object.assign({}, fallback)]));
+    settings.set("controlCenterWidgets", widgets.concat([Object.assign({}, fallback)]));
 }
 
 function isShown(widget) {
     switch (widget?.id) {
-    case "battery":
-        return BatteryService.batteryAvailable || PowerProfileWatcher.available;
-    case "diskUsage":
-        return DgopService.dgopAvailable;
+    case "battery": {
+        const battAvail = (function() {
+            try { return typeof BatteryService !== "undefined" && BatteryService.batteryAvailable; } catch(e) { return true; }
+        })();
+        const pwrAvail = (function() {
+            try { return typeof PowerProfileWatcher !== "undefined" && PowerProfileWatcher.available; } catch(e) { return false; }
+        })();
+        return battAvail || pwrAvail;
+    }
+    case "diskUsage": {
+        try {
+            return typeof DgopService !== "undefined" ? DgopService.dgopAvailable : true;
+        } catch(e) {
+            return true;
+        }
+    }
     default:
         return true;
     }
@@ -95,6 +118,12 @@ function defaultWidget(id, columns) {
 }
 
 function sizeSpec(widget, columns, rows = Infinity) {
+    const gridStep = (function() {
+        try { return typeof CcMetrics !== "undefined" ? CcMetrics.gridStep : 0.5; } catch(e) { return 0.5; }
+    })();
+    const defaultCols = (function() {
+        try { return typeof CcMetrics !== "undefined" ? CcMetrics.defaultColumns : 8; } catch(e) { return 8; }
+    })();
     const spec = {
         "w": 4,
         "h": 1,
@@ -102,10 +131,10 @@ function sizeSpec(widget, columns, rows = Infinity) {
         "maxW": columns,
         "minH": 1,
         "maxH": rows,
-        "step": CcMetrics.gridStep
+        "step": gridStep
     };
     if (widget?.id === "user")
-        spec.w = (Number.isFinite(columns) ? columns : CcMetrics.defaultColumns) - ACTION_IDS.length;
+        spec.w = (Number.isFinite(columns) ? columns : defaultCols) - ACTION_IDS.length;
     if (BUTTON_IDS.includes(widget?.id))
         spec.w = 1;
     return spec;
@@ -154,12 +183,14 @@ function newWidget(widgetId, columns) {
 // `base` replaces the saved list, so a drop can commit the grid's rearranged layout together with the new tile.
 // `room` is the free run of columns at the spot; the tile narrows into it instead of sliding below.
 function addWidget(widgetId, columns, col, row, base, page, room) {
-    const widgets = (base ?? SettingsData.controlCenterWidgets).slice();
+    const sd = _getSettingsData();
+    const widgets = (base ?? (sd ? sd.controlCenterWidgets : [])).slice();
     const widget = Pages.withPage(newWidget(widgetId, columns), Number.isInteger(page) ? page : 0);
     if (Number.isFinite(col) && Number.isFinite(row))
         Object.assign(widget, placedInRoom(widget, columns, col, row, room));
     widgets.push(widget);
-    SettingsData.set("controlCenterWidgets", widgets);
+    if (sd)
+        sd.set("controlCenterWidgets", widgets);
 }
 
 // The size clamp only ever narrows a fitted width further, so the tile stays inside the room.
@@ -185,11 +216,13 @@ function generateUniqueId() {
 }
 
 function removeWidget(index) {
-    const widgets = SettingsData.controlCenterWidgets.slice();
+    const sd = _getSettingsData();
+    const widgets = (sd ? sd.controlCenterWidgets : []).slice();
     if (index < 0 || index >= widgets.length || !isRemovable(widgets[index]))
         return;
     const [removed] = widgets.splice(index, 1);
-    SettingsData.set("controlCenterWidgets", removed.id === GROUP_ID ? ungroup(widgets, removed.instanceId, Pages.pageOf(removed)) : widgets);
+    if (sd)
+        sd.set("controlCenterWidgets", removed.id === GROUP_ID ? ungroup(widgets, removed.instanceId, Pages.pageOf(removed)) : widgets);
 }
 
 function ungroup(widgets, groupId, page) {
@@ -203,22 +236,25 @@ function ungroup(widgets, groupId, page) {
 }
 
 function moveToPage(index, page, base, cell) {
-    const widgets = base ?? SettingsData.controlCenterWidgets;
+    const sd = _getSettingsData();
+    const widgets = base ?? (sd ? sd.controlCenterWidgets : []);
     const moved = Pages.movedToPage(widgets, index, page, cell);
-    if (moved !== widgets)
-        SettingsData.set("controlCenterWidgets", moved);
+    if (moved !== widgets && sd)
+        sd.set("controlCenterWidgets", moved);
 }
 
 function compactPages(isShown) {
-    const widgets = SettingsData.controlCenterWidgets;
+    const sd = _getSettingsData();
+    const widgets = sd ? sd.controlCenterWidgets : [];
     const compacted = Pages.compactPages(widgets, isShown);
-    if (compacted !== widgets)
-        SettingsData.set("controlCenterWidgets", compacted);
+    if (compacted !== widgets && sd)
+        sd.set("controlCenterWidgets", compacted);
 }
 
 // Lands just before `beforeIndex`, or after the group's last member.
 function moveToGroup(index, groupId, beforeIndex) {
-    const widgets = SettingsData.controlCenterWidgets.slice();
+    const sd = _getSettingsData();
+    const widgets = (sd ? sd.controlCenterWidgets : []).slice();
     const widget = widgets[index];
     if (!widget || !canGroup(widget))
         return;
@@ -234,7 +270,8 @@ function moveToGroup(index, groupId, beforeIndex) {
     delete moved.col;
     delete moved.row;
     widgets.splice(at, 0, moved);
-    SettingsData.set("controlCenterWidgets", widgets);
+    if (sd)
+        sd.set("controlCenterWidgets", widgets);
 }
 
 function placeFromGroup(widgets, index, col, row) {
@@ -249,23 +286,31 @@ function placeFromGroup(widgets, index, col, row) {
 }
 
 function setOption(index, key, value) {
-    const widgets = SettingsData.controlCenterWidgets.slice();
+    const sd = _getSettingsData();
+    const widgets = (sd ? sd.controlCenterWidgets : []).slice();
     if (index < 0 || index >= widgets.length)
         return;
     widgets[index] = Object.assign({}, widgets[index], {
         [key]: value
     });
-    SettingsData.set("controlCenterWidgets", widgets);
+    if (sd)
+        sd.set("controlCenterWidgets", widgets);
 }
 
 function setLayout(widgets) {
-    SettingsData.set("controlCenterWidgets", widgets);
+    const sd = _getSettingsData();
+    if (sd)
+        sd.set("controlCenterWidgets", widgets);
 }
 
 function resetToDefault() {
-    SettingsData.resetToDefault(["controlCenterWidgets", "controlCenterColumns"]);
+    const sd = _getSettingsData();
+    if (sd)
+        sd.resetToDefault(["controlCenterWidgets", "controlCenterColumns"]);
 }
 
 function clearAll() {
-    SettingsData.set("controlCenterWidgets", SettingsData.controlCenterWidgets.filter(widget => !isRemovable(widget)).map(widget => Pages.withPage(widget, 0)));
+    const sd = _getSettingsData();
+    if (sd)
+        sd.set("controlCenterWidgets", sd.controlCenterWidgets.filter(widget => !isRemovable(widget)).map(widget => Pages.withPage(widget, 0)));
 }

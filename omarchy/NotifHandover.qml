@@ -6,6 +6,9 @@ import "../quickshell/Common"
 Item {
     id: root
 
+    property var pluginApi: null
+    onPluginApiChanged: if (pluginApi) claim()
+
     readonly property string notifScript: {
         const url = Qt.resolvedUrl("../scripts/notif-popups").toString();
         return url.startsWith("file://") ? decodeURIComponent(url.slice(7)) : url;

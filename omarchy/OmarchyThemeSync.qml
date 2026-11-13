@@ -20,6 +20,7 @@ Item {
 
     readonly property string colorsTomlPath: Quickshell.env("HOME") + "/.config/omarchy/current/theme/colors.toml"
     readonly property string backgroundPath: Quickshell.env("HOME") + "/.config/omarchy/current/background"
+    readonly property string backgroundsFolder: Quickshell.env("HOME") + "/.config/omarchy/current/backgrounds"
 
     property string currentWallpaper: ""
 
@@ -44,8 +45,16 @@ Item {
         if (typeof Theme !== "undefined" && typeof Theme.switchTheme === "function") {
             Theme.switchTheme("custom", true, false);
         }
-        if (root.currentWallpaper.length > 0 && typeof SessionData !== "undefined") {
-            SessionData.wallpaperPath = root.currentWallpaper;
+        if (typeof SessionData !== "undefined") {
+            if (root.currentWallpaper.length > 0) {
+                SessionData.wallpaperPath = root.currentWallpaper;
+            }
+            const bgDir = root.backgroundsFolder;
+            const currentFolders = Array.isArray(SessionData.wallpaperFolders) ? SessionData.wallpaperFolders.slice() : [];
+            if (!currentFolders.includes(bgDir)) {
+                SessionData.set("wallpaperFolders", [bgDir].concat(currentFolders));
+            }
+            SessionData.set("wallpaperCyclingFolderPath", bgDir);
         }
     }
 

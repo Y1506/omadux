@@ -6,6 +6,9 @@ import "../quickshell/Common"
 Item {
     id: root
 
+    property var pluginApi: null
+    onPluginApiChanged: if (pluginApi) setupLockShim()
+
     readonly property string lockShimSrc: {
         const url = Qt.resolvedUrl("../scripts/lock-screen").toString();
         return url.startsWith("file://") ? decodeURIComponent(url.slice(7)) : url;

@@ -6,6 +6,9 @@ import "../quickshell/Common"
 Item {
     id: root
 
+    property var pluginApi: null
+    onPluginApiChanged: if (pluginApi) claim()
+
     readonly property string osdScript: {
         const url = Qt.resolvedUrl("../scripts/osd-handover").toString();
         return url.startsWith("file://") ? decodeURIComponent(url.slice(7)) : url;

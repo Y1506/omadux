@@ -7,8 +7,17 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    property var pluginApi: null
+    property bool available: true
     property var enabledPlugins: []
     property var widgetComponents: ({})
+
+    function init(api) {
+        if (!api) return;
+        root.pluginApi = api;
+        root.available = true;
+        root.refresh();
+    }
 
     readonly property string enabledPath: Quickshell.env("HOME") + "/.config/omarchy/plugins/enabled.json"
     readonly property string pluginsDir: Quickshell.env("HOME") + "/.config/omarchy/plugins"

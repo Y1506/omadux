@@ -5,6 +5,9 @@ import Quickshell.Io
 Item {
     id: root
 
+    property var pluginApi: null
+    onPluginApiChanged: if (pluginApi) apply()
+
     readonly property string handoverScript: {
         const url = Qt.resolvedUrl("../scripts/handover.py").toString();
         return url.startsWith("file://") ? decodeURIComponent(url.slice(7)) : url;

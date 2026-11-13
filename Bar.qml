@@ -2,10 +2,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import qs.Commons
 import "./omarchy"
 import "./quickshell"
 import "./quickshell/Common"
+import "./quickshell/DCommon/Common" as DC
 import "./quickshell/Services"
 import "./quickshell/Modals"
 import "./quickshell/Modules"
@@ -14,6 +14,14 @@ PanelWindow {
     id: root
 
     property var pluginApi: null
+
+    onPluginApiChanged: {
+        if (root.pluginApi) {
+            if (typeof OmarchyPluginService !== "undefined" && typeof OmarchyPluginService.init === "function") {
+                OmarchyPluginService.init(root.pluginApi);
+            }
+        }
+    }
 
     WlrLayershell.namespace: "omadux-anchor"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
@@ -25,6 +33,22 @@ PanelWindow {
     anchors {
         top: true
         left: true
+    }
+
+    Component.onCompleted: {
+        DC.Style.theme = Theme;
+        DC.Style.settings = SettingsData;
+        DC.I18n.backend = I18n;
+        DC.Paths.backend = Paths;
+        DC.Log.backend = Log;
+        DC.Host.session = SessionService;
+        DC.Host.cache = CacheData;
+        DC.Host.files = FilesService;
+        DC.Host.hyprlandFocusGrab = Qt.binding(() => CompositorService.useHyprlandFocusGrab);
+        DC.Host.ownWindowDecorations = Qt.binding(() => SettingsData.floatingWindowTitleBars);
+        Host.files = FilesService;
+        Host.session = SessionService;
+        Host.cache = CacheData;
     }
 
     // Quattro & Omarchy CLI IPC Router
@@ -166,26 +190,31 @@ PanelWindow {
     // 2. Handover baseline snapshot & restore watchdog
     Handover {
         id: handover
+        pluginApi: root.pluginApi
     }
 
     // 3. Notification popups takeover (Mako DND)
     NotifHandover {
         id: notifHandover
+        pluginApi: root.pluginApi
     }
 
     // 4. Volume / brightness OSD takeover (SwayOSD)
     OsdHandover {
         id: osdHandover
+        pluginApi: root.pluginApi
     }
 
     // 5. Lock screen shim coordinator (~/.local/bin/omarchy-lock-screen)
     LockHandover {
         id: lockHandover
+        pluginApi: root.pluginApi
     }
 
     // 6. Dynamic Hyprland keybind takeover
     KbService {
         id: kbService
+        pluginApi: root.pluginApi
     }
 
     // 7. Omarchy colors.toml & wallpaper sync

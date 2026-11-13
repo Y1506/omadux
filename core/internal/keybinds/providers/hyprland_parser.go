@@ -508,6 +508,10 @@ func (p *HyprlandParser) parseFileWithSource(filePath, sectionName string) (*Hyp
 		return nil, err
 	}
 
+	if strings.HasSuffix(absPath, ".conf") {
+		return p.parseConfLines(string(data), filepath.Dir(absPath), absPath, sectionName)
+	}
+
 	return p.parseLuaLines(string(data), filepath.Dir(absPath), absPath, sectionName)
 }
 
@@ -544,11 +548,17 @@ func (p *HyprlandParser) parseLuaLines(content string, baseDir, absPath, section
 	boundInFile := make(map[string]bool)
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || strings.HasPrefix(trimmed, "--") || !strings.Contains(trimmed, "hl.bind") {
+		if trimmed == "" || strings.HasPrefix(trimmed, "--") {
 			continue
 		}
-		if kbc, _, _, ok := parseLuaBindInvocation(trimmed); ok {
-			boundInFile[strings.ToLower(luaKeyComboToInternalKey(kbc))] = true
+		if strings.Contains(trimmed, "hl.bind") {
+			if kbc, _, _, ok := parseLuaBindInvocation(trimmed); ok {
+				boundInFile[strings.ToLower(luaKeyComboToInternalKey(kbc))] = true
+			}
+		} else if strings.Contains(trimmed, "o.bind") || strings.Contains(trimmed, "o.rebind") {
+			if kbc, _, _, _, ok := parseOmarchyBindInvocation(trimmed); ok {
+				boundInFile[strings.ToLower(luaKeyComboToInternalKey(kbc))] = true
+			}
 		}
 	}
 	rootDir := baseDir
@@ -570,7 +580,10 @@ func (p *HyprlandParser) parseLuaLines(content string, baseDir, absPath, section
 				if p.walker.Record(rel) {
 					p.dmsProcessed = true
 				}
-				fullPath := luaconfig.ModuleToPath(rootDir, mod)
+				fullPath := resolveLuaModulePath(rootDir, mod)
+				if fullPath == "" {
+					continue
+				}
 				expanded, err := utils.ExpandPath(fullPath)
 				if err != nil {
 					continue
@@ -596,6 +609,23 @@ func (p *HyprlandParser) parseLuaLines(content string, baseDir, absPath, section
 				}
 			}
 			continue
+		}
+
+		if strings.Contains(trimmed, "o.bind") || strings.Contains(trimmed, "o.rebind") {
+			kbc, desc, action, optSuffix, ok := parseOmarchyBindInvocation(trimmed)
+			if ok {
+				flags := luaBindOptFlags(optSuffix)
+				if desc == "" {
+					desc = luaLineTrailingComment(line)
+				}
+				kb := luaKeyComboToBinding(kbc, action, p.currentSource, desc)
+				kb.Flags = flags
+				kb.Device = luaBindOptDevice(optSuffix)
+				if p.addBind(kb) {
+					section.Keybinds = append(section.Keybinds, *kb)
+				}
+				continue
+			}
 		}
 
 		if !strings.Contains(trimmed, "hl.bind") {
@@ -891,6 +921,68 @@ func parseLuaBindInvocation(line string) (keyCombo, actionExpr, optSuffix string
 		optSuffix = strings.TrimSpace(line[i:])
 	}
 	return keyCombo, strings.TrimSpace(actionExpr), optSuffix, true
+}
+
+// parseOmarchyBindInvocation parses o.bind("KEYS", "DESC", "COMMAND" [, opts]) or o.rebind(...)
+func parseOmarchyBindInvocation(line string) (keyCombo, description, actionExpr, optSuffix string, ok bool) {
+	var start int
+	if idx := strings.Index(line, "o.rebind"); idx >= 0 {
+		start = idx + len("o.rebind")
+	} else if idx := strings.Index(line, "o.bind"); idx >= 0 {
+		start = idx + len("o.bind")
+	} else {
+		return "", "", "", "", false
+	}
+
+	i := skipLuaWS(line, start)
+	if i >= len(line) || line[i] != '(' {
+		return "", "", "", "", false
+	}
+	i++
+	i = skipLuaWS(line, i)
+	// Arg 1: keys
+	keyCombo, i, ok = parseLuaStringLiteral(line, i)
+	if !ok {
+		return "", "", "", "", false
+	}
+	i = skipLuaWS(line, i)
+	if i >= len(line) || line[i] != ',' {
+		return "", "", "", "", false
+	}
+	i++
+	i = skipLuaWS(line, i)
+	// Arg 2: description (can be string literal or nil or identifier)
+	if strings.HasPrefix(line[i:], "nil") {
+		description = ""
+		i += len("nil")
+	} else if desc, next, ok := parseLuaStringLiteral(line, i); ok {
+		description = desc
+		i = next
+	} else {
+		description = ""
+		for i < len(line) && line[i] != ',' {
+			i++
+		}
+	}
+	i = skipLuaWS(line, i)
+	if i >= len(line) || line[i] != ',' {
+		return "", "", "", "", false
+	}
+	i++
+	i = skipLuaWS(line, i)
+	// Arg 3: command or dispatcher
+	if cmd, next, ok := parseLuaStringLiteral(line, i); ok {
+		actionExpr = cmd
+		i = next
+	} else if expr, next, ok := parseLuaFirstArgExpr(line, i); ok {
+		actionExpr = expr
+		i = next
+	}
+	i = skipLuaWS(line, i)
+	if i < len(line) && line[i] == ',' {
+		optSuffix = strings.TrimSpace(line[i:])
+	}
+	return keyCombo, description, strings.TrimSpace(actionExpr), optSuffix, true
 }
 
 func luaKeyComboToBinding(keyCombo, actionExpr, source, lineComment string) *HyprlandKeyBinding {
@@ -1457,18 +1549,134 @@ func isDMSBindsPrimarySourcePath(p string) bool {
 	return strings.Contains(p, "/dms/binds.lua") || strings.HasSuffix(p, "dms/binds.lua")
 }
 
+func resolveLuaModulePath(rootDir, mod string) string {
+	cand := luaconfig.ModuleToPath(rootDir, mod)
+	if _, err := os.Stat(cand); err == nil {
+		return cand
+	}
+
+	rel := luaconfig.ModuleToRelPath(mod)
+
+	if strings.HasPrefix(mod, "hypr.") {
+		trimmedRel := strings.TrimPrefix(rel, "hypr"+string(filepath.Separator))
+		cand = filepath.Join(rootDir, trimmedRel)
+		if _, err := os.Stat(cand); err == nil {
+			return cand
+		}
+	}
+
+	cand = filepath.Join(filepath.Dir(rootDir), rel)
+	if _, err := os.Stat(cand); err == nil {
+		return cand
+	}
+
+	omarchyPath := os.Getenv("OMARCHY_PATH")
+	if omarchyPath == "" {
+		omarchyPath = "/usr/share/omarchy"
+	}
+	cand = filepath.Join(omarchyPath, rel)
+	if _, err := os.Stat(cand); err == nil {
+		return cand
+	}
+
+	return ""
+}
+
+func (p *HyprlandParser) parseConfLines(content string, baseDir, absPath, sectionName string) (*HyprlandSection, error) {
+	section := &HyprlandSection{Name: sectionName}
+	prevSource := p.currentSource
+	p.currentSource = absPath
+	defer func() { p.currentSource = prevSource }()
+
+	lines := strings.Split(content, "\n")
+	var lastComment string
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			lastComment = ""
+			continue
+		}
+		if strings.HasPrefix(trimmed, "#") {
+			lastComment = strings.TrimSpace(strings.TrimPrefix(trimmed, "#"))
+			continue
+		}
+
+		if strings.HasPrefix(trimmed, "source") {
+			parts := strings.SplitN(trimmed, "=", 2)
+			if len(parts) == 2 {
+				src := strings.TrimSpace(parts[1])
+				expanded, err := utils.ExpandPath(src)
+				if err == nil {
+					if !filepath.IsAbs(expanded) {
+						expanded = filepath.Join(baseDir, expanded)
+					}
+					if sub, err := p.parseFileWithSource(expanded, ""); err == nil {
+						section.Children = append(section.Children, *sub)
+					}
+				}
+			}
+			lastComment = ""
+			continue
+		}
+
+		if strings.HasPrefix(trimmed, "bind") {
+			eqIdx := strings.Index(trimmed, "=")
+			if eqIdx > 0 {
+				bindType := strings.TrimSpace(trimmed[:eqIdx])
+				rest := strings.TrimSpace(trimmed[eqIdx+1:])
+				parts := strings.SplitN(rest, ",", 4)
+				if len(parts) >= 3 {
+					modsStr := strings.TrimSpace(parts[0])
+					keyStr := strings.TrimSpace(parts[1])
+					dispStr := strings.TrimSpace(parts[2])
+					paramStr := ""
+					if len(parts) >= 4 {
+						paramStr = strings.TrimSpace(parts[3])
+					}
+					var mods []string
+					if modsStr != "" {
+						mods = strings.Fields(strings.ReplaceAll(modsStr, ",", " "))
+					}
+					comment := lastComment
+					if comment == "" {
+						comment = hyprlandAutogenerateComment(dispStr, paramStr)
+					}
+					flags := ""
+					if strings.Contains(bindType, "l") {
+						flags += "locked"
+					}
+					kb := &HyprlandKeyBinding{
+						Mods:       mods,
+						Key:        keyStr,
+						Dispatcher: dispStr,
+						Params:     paramStr,
+						Comment:    comment,
+						Source:     absPath,
+						Flags:      flags,
+					}
+					if p.addBind(kb) {
+						section.Keybinds = append(section.Keybinds, *kb)
+					}
+				}
+			}
+		}
+		lastComment = ""
+	}
+
+	return section, nil
+}
+
 func hyprlandMainConfigPath(dir string) (string, error) {
 	expandedDir, err := utils.ExpandPath(dir)
 	if err != nil {
 		return "", err
 	}
-	luaPath := filepath.Join(expandedDir, "hyprland.lua")
-	st, err := os.Stat(luaPath)
-	if err != nil {
-		return "", err
+	for _, name := range []string{"hyprland.lua", "hyprland.conf", "bindings.lua", "bindings.conf"} {
+		p := filepath.Join(expandedDir, name)
+		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
+			return p, nil
+		}
 	}
-	if !st.Mode().IsRegular() {
-		return "", os.ErrNotExist
-	}
-	return luaPath, nil
+	return "", os.ErrNotExist
 }

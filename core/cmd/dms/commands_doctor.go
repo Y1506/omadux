@@ -758,6 +758,21 @@ func getDMSShellVersion() (version, path string) {
 		if data, err := os.ReadFile(versionFile); err == nil {
 			return strings.TrimSpace(string(data)), dmsPath
 		}
+		if data, err := os.ReadFile(filepath.Join(filepath.Dir(dmsPath), "VERSION")); err == nil {
+			return strings.TrimSpace(string(data)), dmsPath
+		}
+		if data, err := os.ReadFile(filepath.Join(dmsPath, "manifest.json")); err == nil {
+			var m struct{ Version string `json:"version"` }
+			if json.Unmarshal(data, &m) == nil && m.Version != "" {
+				return m.Version, dmsPath
+			}
+		}
+		if data, err := os.ReadFile(filepath.Join(filepath.Dir(dmsPath), "manifest.json")); err == nil {
+			var m struct{ Version string `json:"version"` }
+			if json.Unmarshal(data, &m) == nil && m.Version != "" {
+				return m.Version, dmsPath
+			}
+		}
 		return "installed", dmsPath
 	}
 
@@ -765,16 +780,35 @@ func getDMSShellVersion() (version, path string) {
 }
 
 func getQuickshellVersionInfo(missingFeatures bool) (display string, st status, path, details, semver string) {
-	qsPath, err := qtbaseembed.Resolve()
-	if err != nil {
-		return "Not installed", statusError, "", "Install the dux-qt-base package", ""
-	}
+	var output []byte
+	var err error
+	var qsPath string
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	output, err := qtbase.Command(ctx, "--version").Output()
+
+	if p, rErr := qtbaseembed.Resolve(); rErr == nil {
+		testOut, testErr := qtbase.Command(ctx, "--version").Output()
+		if testErr == nil {
+			qsPath = p
+			output = testOut
+		}
+	}
+
+	if output == nil {
+		if sysPath, lErr := exec.LookPath("quickshell"); lErr == nil {
+			qsPath = sysPath
+			output, err = exec.CommandContext(ctx, sysPath, "--version").Output()
+		} else if sysPath, lErr := exec.LookPath("qs"); lErr == nil {
+			qsPath = sysPath
+			output, err = exec.CommandContext(ctx, sysPath, "--version").Output()
+		} else {
+			return "Not installed", statusError, "", "Install quickshell or dux-qt-base package", ""
+		}
+	}
+
 	if err != nil {
-		details := "Run 'dms qs --version' to inspect the failure."
+		details := "Run 'quickshell --version' to inspect the failure."
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
 			details = quickshellVersionFailureDetails(string(exitErr.Stderr))
@@ -817,7 +851,16 @@ func checkDMSInstallation() []checkResult {
 
 	shellQml := filepath.Join(dmsPath, "shell.qml")
 	if _, err := os.Stat(shellQml); err != nil {
-		results = append(results, checkResult{catInstallation, "shell.qml", statusError, "Missing", shellQml, doctorDocsURL + "#dms-configuration"})
+		barQml := filepath.Join(dmsPath, "Bar.qml")
+		if _, bErr := os.Stat(barQml); bErr == nil {
+			results = append(results, checkResult{catInstallation, "Bar.qml (Omarchy plugin)", statusOK, "Present", barQml, doctorDocsURL + "#dms-configuration"})
+		} else if dmsShellQml := filepath.Join(dmsPath, "DMSShell.qml"); func() bool { _, sErr := os.Stat(dmsShellQml); return sErr == nil }() {
+			results = append(results, checkResult{catInstallation, "DMSShell.qml", statusOK, "Present", dmsShellQml, doctorDocsURL + "#dms-configuration"})
+		} else if qsShellQml := filepath.Join(dmsPath, "quickshell", "shell.qml"); func() bool { _, qErr := os.Stat(qsShellQml); return qErr == nil }() {
+			results = append(results, checkResult{catInstallation, "shell.qml", statusOK, "Present", qsShellQml, doctorDocsURL + "#dms-configuration"})
+		} else {
+			results = append(results, checkResult{catInstallation, "shell.qml", statusError, "Missing", shellQml, doctorDocsURL + "#dms-configuration"})
+		}
 	} else {
 		results = append(results, checkResult{catInstallation, "shell.qml", statusOK, "Present", shellQml, doctorDocsURL + "#dms-configuration"})
 	}
@@ -825,6 +868,8 @@ func checkDMSInstallation() []checkResult {
 	if doctorVerbose {
 		installType := "Unknown"
 		switch {
+		case strings.Contains(dmsPath, "omarchy"):
+			installType = "Omarchy plugin"
 		case strings.Contains(dmsPath, "/nix/store"):
 			installType = "Nix store"
 		case strings.Contains(dmsPath, ".local/share") || strings.Contains(dmsPath, "/usr/share"):
@@ -1296,7 +1341,8 @@ func detectRunningWM() string {
 func checkQuickshellFeatures() ([]checkResult, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := qtbase.Command(ctx, "--version").Run(); err != nil {
+	cmd, err := quickshellCommand(ctx, "--version")
+	if err != nil || cmd.Run() != nil {
 		return nil, false
 	}
 
@@ -1366,9 +1412,12 @@ ShellRoot {
 		return nil, false
 	}
 
-	cmd := qtbase.Command(context.Background(), "-p", testScript)
-	cmd.Env = append(os.Environ(), "NO_COLOR=1")
-	output, _ := cmd.CombinedOutput()
+	testCmd, err := quickshellCommand(context.Background(), "-p", testScript)
+	if err != nil {
+		return nil, false
+	}
+	testCmd.Env = append(os.Environ(), "NO_COLOR=1")
+	output, _ := testCmd.CombinedOutput()
 	outputStr := string(output)
 
 	features := []struct{ name, desc string }{
@@ -2155,6 +2204,10 @@ func findBundledFontFile(shellPath, family string) string {
 		path := filepath.Join(shellPath, rel)
 		if info, err := os.Stat(path); err == nil && !info.IsDir() {
 			return path
+		}
+		path2 := filepath.Join(shellPath, "quickshell", rel)
+		if info, err := os.Stat(path2); err == nil && !info.IsDir() {
+			return path2
 		}
 	}
 	return ""

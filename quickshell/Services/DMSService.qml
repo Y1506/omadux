@@ -39,7 +39,7 @@ Singleton {
 
     Process {
         id: socketDiscoveryProc
-        command: ["sh", "-c", "for s in \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms*.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/danklinux*.sock; do [ -S \"$s\" ] && echo \"$s\" && exit 0; done; exit 1"]
+        command: ["sh", "-c", "for s in \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms*.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/danklinux*.sock; do [ -S \"$s\" ] && echo \"$s\" && exit 0; done; exit 1"]
         stdout: SplitParser {
             onRead: line => {
                 const s = line.trim();

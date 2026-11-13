@@ -69,6 +69,51 @@ Item {
         id: mainColumn
 
         SettingsCard {
+            id: omarchyThemeCard
+            tab: "theme"
+            tags: ["omarchy", "theme", "system", "preset"]
+            title: I18n.tr("Omarchy Themes")
+            settingKey: "omarchyTheme"
+            iconName: "palette"
+
+            property var omarchyThemes: []
+
+            Process {
+                id: omarchyThemeListProc
+                command: ["sh", "-c", "command -v omarchy-theme-list >/dev/null && omarchy-theme-list || echo ''"]
+                running: true
+                stdout: SplitParser {
+                    onRead: line => {
+                        const trimmed = String(line).trim();
+                        if (trimmed.length > 0) {
+                            omarchyThemeCard.omarchyThemes = omarchyThemeCard.omarchyThemes.concat([trimmed]);
+                        }
+                    }
+                }
+            }
+
+            SettingsRow {
+                body: Flow {
+                    width: parent.width
+                    spacing: Theme.spacingS
+
+                    Repeater {
+                        model: omarchyThemeCard.omarchyThemes
+
+                        delegate: DankButton {
+                            required property string modelData
+                            text: modelData
+                            iconName: "palette"
+                            onClicked: {
+                                Quickshell.execDetached(["omarchy-theme-set", modelData]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        SettingsCard {
             tab: "theme"
             tags: ["color", "palette", "theme", "appearance"]
             title: I18n.tr("Theme")

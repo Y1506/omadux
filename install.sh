@@ -36,6 +36,25 @@ build_dms() {
     fi
 }
 
+deploy_plugin() {
+    local target_dir="$1"
+    echo "==> Deploying plugin to $target_dir..."
+    mkdir -p "$target_dir"
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.gitignore' \
+            --exclude='.superpowers' \
+            --exclude='tests' \
+            --exclude='core' \
+            "$PLUGIN_DIR/" "$target_dir/"
+    else
+        cp -a "$PLUGIN_DIR"/{Bar.qml,manifest.json,qmldir,omadux.lua,VERSION,bin,omarchy,quickshell,scripts} "$target_dir/"
+    fi
+    chmod +x "$target_dir/bin/dms" 2>/dev/null || true
+    echo "✓ Deployed to $target_dir"
+}
+
 build_dms
 
 if [[ "${1:-}" == "--dry-build" ]]; then
@@ -49,11 +68,14 @@ chmod +x "$PLUGIN_DIR/scripts/omadux" 2>/dev/null || true
 ln -sf "$PLUGIN_DIR/scripts/omadux" "$HOME/.local/bin/omadux"
 ln -sf "$DMS_BIN" "$HOME/.local/bin/dms"
 
-# Ensure binary is in active plugin runtime path if present
+# Deploy to Omarchy plugin directories
+OMARCHY_PLUGIN_CONFIG="$HOME/.config/omarchy/plugins/omadux"
+deploy_plugin "$OMARCHY_PLUGIN_CONFIG"
+
 OMARCHY_PLUGIN_SHARE="$HOME/.local/share/omarchy/plugins/y1506.omadux.bar"
-mkdir -p "$OMARCHY_PLUGIN_SHARE/bin"
-cp -p "$DMS_BIN" "$OMARCHY_PLUGIN_SHARE/bin/dms"
-chmod +x "$OMARCHY_PLUGIN_SHARE/bin/dms"
+if [[ -d "$OMARCHY_PLUGIN_SHARE" || -d "$HOME/.local/share/omarchy/plugins" ]]; then
+    deploy_plugin "$OMARCHY_PLUGIN_SHARE"
+fi
 
 HOOKS_DIR="$HOME/.config/omarchy/hooks/theme-set.d"
 mkdir -p "$HOOKS_DIR"
@@ -65,4 +87,4 @@ fi
 EOF
 chmod +x "$HOOKS_DIR/20-omadux.sh"
 
-echo "✓ Omadux installed successfully."
+echo "✓ Omadux installed and deployed successfully."
