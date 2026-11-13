@@ -7,3 +7,4 @@ Task 3: complete (omarchy/DmsProcess.qml implemented, dms session supervision an
 Task 4: complete (handover.py snapshot, watchdog, lock shim, mako/swayosd handovers, KbService, and tests/test-restore.sh passing)
 Task 5: complete (scripts/omadux sync, omadux.lua, OmarchyThemeSync.qml, enableExternalAppTheming settings gate, and tests/test-omadux-theme.sh passing)
 Task 6: complete (PluginBarFacade.qml, BarWidgetSlot.qml, OmarchyPluginService.qml, OmarchyPlugins.qml, widget host and catalog integration, tests/test-facade.sh passing)
+Task 7: complete (Bar.qml Quattro entry point, IPC routing, service orchestration, root qmldir, and tests/test-root-bar.sh passing)
