@@ -6,3 +6,6 @@ NotifHandover 1.0 NotifHandover.qml
 OsdHandover 1.0 OsdHandover.qml
 LockHandover 1.0 LockHandover.qml
 OmarchyThemeSync 1.0 OmarchyThemeSync.qml
+PluginBarFacade 1.0 PluginBarFacade.qml
+BarWidgetSlot 1.0 BarWidgetSlot.qml
+singleton OmarchyPluginService 1.0 OmarchyPluginService.qml

@@ -268,6 +268,8 @@ var DEFAULTS = {
         hideWhenIdle: false,
         compactMode: false
     },
+    "omarchyPlugins": {
+    },
     systemUpdate: {
         hideWhenIdle: false
     }

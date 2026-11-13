@@ -292,7 +292,7 @@ function migrateToVersion(obj, targetVersion) {
                 showOnLastDisplay: true,
                 leftWidgets: settings.dankBarLeftWidgets || ["launcherButton", "workspaceSwitcher", "focusedWindow"],
                 centerWidgets: settings.dankBarCenterWidgets || ["music", "clock", "weather"],
-                rightWidgets: settings.dankBarRightWidgets || ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"],
+                rightWidgets: settings.dankBarRightWidgets || ["systemTray", "omarchyPlugins", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"],
                 spacing: settings.dankBarSpacing !== undefined ? settings.dankBarSpacing : 4,
                 innerPadding: settings.dankBarInnerPadding !== undefined ? settings.dankBarInnerPadding : 4,
                 bottomGap: settings.dankBarBottomGap !== undefined ? settings.dankBarBottomGap : 0,

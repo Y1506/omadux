@@ -50,6 +50,7 @@ var componentNames = {
     "layout": "layoutComponent",
     "powerMenuButton": "powerMenuButtonComponent",
     "appsDock": "appsDockComponent",
+    "omarchyPlugins": "omarchyPluginsComponent",
     "island": "islandComponent"
 };
 

@@ -167,6 +167,7 @@ Item {
             colorPickerComponent,
             systemUpdateComponent,
             powerMenuButtonComponent,
+            omarchyPluginsComponent,
             islandComponent
         });
 
@@ -839,6 +840,12 @@ Item {
     }
 
     // Reserves the compact face's along-axis room; the morph surface is the bar's island overlay, anchored to this slot.
+    Component {
+        id: omarchyPluginsComponent
+
+        OmarchyPlugins {}
+    }
+
     Component {
         id: islandComponent
 

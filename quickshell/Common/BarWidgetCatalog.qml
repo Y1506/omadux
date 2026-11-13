@@ -367,6 +367,13 @@ Singleton {
             "icon": "density_medium",
             "text": I18n.tr("System tray"),
             "description": ""
+        },
+        {
+            "id": "omarchyPlugins",
+            "icon": "extension",
+            "text": "Omarchy plugins",
+            "description": "Hosted 3rd-party Omarchy bar-widget plugins",
+            "section": "right"
         }
     ]
 
