@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+action="${1:-status}"
+
+case "$action" in
+    claim)
+        if command -v makoctl >/dev/null 2>&1; then
+            makoctl mode -a do-not-disturb >/dev/null 2>&1 || true
+        fi
+        ;;
+    release)
+        if command -v makoctl >/dev/null 2>&1; then
+            makoctl mode -r do-not-disturb >/dev/null 2>&1 || true
+        fi
+        ;;
+    status)
+        if command -v makoctl >/dev/null 2>&1; then
+            makoctl mode 2>/dev/null || echo "unknown"
+        else
+            echo "missing"
+        fi
+        ;;
+    *)
+        echo "Usage: notif-popups {claim|release|status}" >&2
+        exit 1
+        ;;
+esac

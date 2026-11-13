@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Try invoking DUX lock surface via omarchy-shell IPC
+if command -v omarchy-shell >/dev/null 2>&1; then
+    if timeout 3 omarchy-shell ipc call plugin:y1506.omadux.bar lock >/dev/null 2>&1; then
+        exit 0
+    fi
+fi
+
+# Fallback safely to hyprlock if omarchy-shell / omadux is unresponsive
+if command -v hyprlock >/dev/null 2>&1; then
+    exec hyprlock "$@"
+fi
+
+echo "ERROR: Neither omadux lock nor hyprlock succeeded" >&2
+exit 1

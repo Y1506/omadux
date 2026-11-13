@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+action="${1:-status}"
+
+case "$action" in
+    claim)
+        if pgrep -x swayosd-server >/dev/null 2>&1; then
+            systemctl --user stop swayosd-server >/dev/null 2>&1 || pkill -x swayosd-server || true
+        fi
+        ;;
+    release)
+        if command -v swayosd-server >/dev/null 2>&1; then
+            systemctl --user start swayosd-server >/dev/null 2>&1 || nohup swayosd-server >/dev/null 2>&1 &
+        fi
+        ;;
+    status)
+        if pgrep -x swayosd-server >/dev/null 2>&1; then
+            echo "active"
+        else
+            echo "inactive"
+        fi
+        ;;
+    *)
+        echo "Usage: osd-handover {claim|release|status}" >&2
+        exit 1
+        ;;
+esac

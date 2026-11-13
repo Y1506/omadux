@@ -1,2 +1,7 @@
 module omarchy
 DmsProcess 1.0 DmsProcess.qml
+Handover 1.0 Handover.qml
+KbService 1.0 KbService.qml
+NotifHandover 1.0 NotifHandover.qml
+OsdHandover 1.0 OsdHandover.qml
+LockHandover 1.0 LockHandover.qml
