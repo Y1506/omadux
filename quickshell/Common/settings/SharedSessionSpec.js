@@ -2,6 +2,9 @@
 .import "../MaterialWallpaper.js" as MaterialWallpaper
 
 var SPEC = {
+    profileImage: {
+        def: ""
+    },
     isLightMode: {
         def: false
     },

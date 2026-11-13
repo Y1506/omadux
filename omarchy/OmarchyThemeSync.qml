@@ -41,15 +41,20 @@ Item {
     function applyTheme() {
         if (typeof SettingsData !== "undefined") {
             SettingsData.customThemeFile = root.themeJsonPath;
+            SettingsData.wallpaperFolder = root.backgroundsFolder;
         }
         if (typeof Theme !== "undefined" && typeof Theme.switchTheme === "function") {
             Theme.switchTheme("custom", true, false);
         }
         if (typeof SessionData !== "undefined") {
+            const bgDir = root.backgroundsFolder;
+            SessionData.wallpaperLastPath = bgDir;
             if (root.currentWallpaper.length > 0) {
                 SessionData.wallpaperPath = root.currentWallpaper;
+                if (typeof SessionData.setWallpaper === "function") {
+                    SessionData.setWallpaper(root.currentWallpaper);
+                }
             }
-            const bgDir = root.backgroundsFolder;
             const currentFolders = Array.isArray(SessionData.wallpaperFolders) ? SessionData.wallpaperFolders.slice() : [];
             if (!currentFolders.includes(bgDir)) {
                 SessionData.set("wallpaperFolders", [bgDir].concat(currentFolders));
@@ -74,7 +79,26 @@ Item {
 
     Process {
         id: bgReader
-        command: ["bash", "-c", "if [[ -f \"" + root.backgroundPath + "\" ]]; then cat \"" + root.backgroundPath + "\" 2>/dev/null; fi"]
+        command: [
+            "bash", "-c",
+            "bg=\"$1\"; bgDir=\"$2\"; " +
+            "if [[ -e \"$bg\" ]]; then " +
+            "  rp=\"$(realpath \"$bg\" 2>/dev/null || readlink -f \"$bg\" 2>/dev/null)\"; " +
+            "  if [[ -f \"$rp\" && ! -d \"$rp\" ]]; then echo \"$rp\"; exit 0; fi; " +
+            "fi; " +
+            "if [[ -f \"$bg\" ]]; then " +
+            "  line=\"$(head -n 1 \"$bg\" 2>/dev/null | tr -d '\\r\\n')\"; " +
+            "  if [[ -f \"$line\" && ! -d \"$line\" ]]; then echo \"$line\"; exit 0; fi; " +
+            "fi; " +
+            "if [[ -d \"$bgDir\" ]]; then " +
+            "  for f in \"$bgDir\"/*.png \"$bgDir\"/*.jpg \"$bgDir\"/*.jpeg \"$bgDir\"/*.webp; do " +
+            "    if [[ -f \"$f\" ]]; then echo \"$f\"; exit 0; fi; " +
+            "  done; " +
+            "fi",
+            "--",
+            root.backgroundPath,
+            root.backgroundsFolder
+        ]
         stdout: SplitParser {
             onRead: line => {
                 const trimmed = String(line).trim();
@@ -82,6 +106,13 @@ Item {
                     root.currentWallpaper = trimmed;
                     if (typeof SessionData !== "undefined") {
                         SessionData.wallpaperPath = trimmed;
+                        if (typeof SessionData.setWallpaper === "function") {
+                            SessionData.setWallpaper(trimmed);
+                        }
+                        SessionData.wallpaperLastPath = root.backgroundsFolder;
+                    }
+                    if (typeof SettingsData !== "undefined") {
+                        SettingsData.wallpaperFolder = root.backgroundsFolder;
                     }
                 }
             }

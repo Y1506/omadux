@@ -28,8 +28,8 @@ type pacmanBackend struct{}
 func (pacmanBackend) ID() string                         { return "pacman" }
 func (pacmanBackend) DisplayName() string                { return "Pacman" }
 func (pacmanBackend) Repo() RepoKind                     { return RepoSystem }
-func (pacmanBackend) NeedsAuth() bool                    { return true }
-func (pacmanBackend) RunsInTerminal() bool               { return false }
+func (pacmanBackend) NeedsAuth() bool                    { return !commandExists("omarchy") }
+func (pacmanBackend) RunsInTerminal() bool               { return commandExists("omarchy") }
 func (pacmanBackend) IsAvailable(_ context.Context) bool { return commandExists("pacman") }
 
 func (b pacmanBackend) CheckUpdates(ctx context.Context) ([]Package, error) {
@@ -47,7 +47,22 @@ func (b pacmanBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onLine 
 	if !BackendHasTargets(b, opts.Targets, opts.IncludeAUR, opts.IncludeFlatpak) {
 		return nil
 	}
+	if commandExists("omarchy") {
+		if opts.AttachStdio {
+			return Run(ctx, omarchyUpgradeArgv(), RunOptions{OnLine: onLine, AttachStdio: true})
+		}
+		term := findTerminal(opts.Terminal)
+		if term != "" {
+			title := "Omarchy — System Update"
+			return Run(ctx, wrapInTerminal(term, title, "omarchy update", opts.TerminalArgs), RunOptions{OnLine: onLine})
+		}
+		return Run(ctx, omarchyUpgradeArgv(), RunOptions{OnLine: onLine, AttachStdio: true})
+	}
 	return Run(ctx, pacmanUpgradeArgv(opts), RunOptions{OnLine: onLine, AttachStdio: opts.AttachStdio})
+}
+
+func omarchyUpgradeArgv() []string {
+	return []string{"omarchy", "update"}
 }
 
 func pacmanUpgradeArgv(opts UpgradeOptions) []string {
@@ -131,6 +146,17 @@ func (b archHelperBackend) Upgrade(ctx context.Context, opts UpgradeOptions, onL
 	}
 	if !BackendHasTargets(b, opts.Targets, opts.IncludeAUR, opts.IncludeFlatpak) {
 		return nil
+	}
+	if commandExists("omarchy") {
+		if opts.AttachStdio {
+			return Run(ctx, omarchyUpgradeArgv(), RunOptions{OnLine: onLine, AttachStdio: true})
+		}
+		term := findTerminal(opts.Terminal)
+		if term != "" {
+			title := "Omarchy — System Update"
+			return Run(ctx, wrapInTerminal(term, title, "omarchy update", opts.TerminalArgs), RunOptions{OnLine: onLine})
+		}
+		return Run(ctx, omarchyUpgradeArgv(), RunOptions{OnLine: onLine, AttachStdio: true})
 	}
 	if os.Getenv("DMS_FORCE_PKEXEC") == "1" {
 		argv := append([]string{"pkexec"}, archHelperUpgradeArgv(b.id, opts)...)

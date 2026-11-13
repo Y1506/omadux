@@ -182,6 +182,58 @@ PanelWindow {
         }
     }
 
+    IpcHandler {
+        target: "omadux"
+
+        function toggle() {
+            if (typeof ModalManager !== "undefined") {
+                ModalManager.toggleDefault();
+            }
+        }
+
+        function toggleLauncher() {
+            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
+                PopoutService.toggleLauncher();
+            } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
+                ModalManager.openLauncher();
+            }
+        }
+
+        function launcher() {
+            toggleLauncher();
+        }
+
+        function toggleControlCenter() {
+            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleControlCenter === "function") {
+                PopoutService.toggleControlCenter();
+            }
+        }
+
+        function controlCenter() {
+            toggleControlCenter();
+        }
+
+        function emoji() {
+            if (typeof ModalManager !== "undefined" && typeof ModalManager.openEmoji === "function") {
+                ModalManager.openEmoji();
+            }
+        }
+
+        function clipboard() {
+            if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
+                ModalManager.openClipboard();
+            } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
+                PopoutService.toggleClipboard();
+            }
+        }
+
+        function settings() {
+            if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
+                ModalManager.openSettings();
+            }
+        }
+    }
+
     // 1. DMS daemon supervisor
     DmsProcess {
         id: dmsProcess

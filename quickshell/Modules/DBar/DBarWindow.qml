@@ -143,7 +143,7 @@ PanelWindow {
         // Kept as a 1px edge strip while revealed under auto-hide so a pointer resting on the screen edge
         // stays inside the window; otherwise reveal/hide would toggle the mask and flicker.
         Region {
-            readonly property bool active: (body.clickThroughEnabled || isIsland) && (!body.inputMaskItem.showing || body.autoHideActive)
+            readonly property bool active: body.autoHideActive || ((body.clickThroughEnabled || isIsland) && !body.inputMaskItem.showing)
             readonly property bool farEdge: body.barPos === SettingsData.Position.Bottom || body.barPos === SettingsData.Position.Right
             x: active ? (barWindow.isVertical ? (farEdge ? body.width - 1 : 0) : body.inputMaskItem.x) : 0
             y: active ? (barWindow.isVertical ? body.inputMaskItem.y : (farEdge ? body.height - 1 : 0)) : 0

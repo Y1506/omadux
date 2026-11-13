@@ -80,11 +80,13 @@ Singleton {
     }
 
     function setProfileImage(imagePath) {
+        if (typeof SessionData !== "undefined") {
+            SessionData.set("profileImage", imagePath || "");
+        }
+        profileImage = imagePath || "";
         if (accountsServiceAvailable) {
             pendingProfileImage = imagePath;
             setSystemProfileImage(imagePath || "");
-        } else {
-            profileImage = imagePath;
         }
     }
 
@@ -191,10 +193,22 @@ Singleton {
     }
 
     Component.onCompleted: {
+        if (typeof SessionData !== "undefined" && SessionData.profileImage) {
+            profileImage = SessionData.profileImage;
+        }
         if (socketPath && socketPath.length > 0) {
             checkDMSCapabilities();
         } else {
             log.info("DMS_SOCKET not set");
+        }
+    }
+
+    Connections {
+        target: typeof SessionData !== "undefined" ? SessionData : null
+        function onProfileImageChanged() {
+            if (SessionData.profileImage) {
+                profileImage = SessionData.profileImage;
+            }
         }
     }
 

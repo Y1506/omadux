@@ -47,6 +47,7 @@ Singleton {
     property string repoMoveNoticeVersion: ""
     property bool isSwitchingMode: false
     property bool suppressOSD: true
+    property string profileImage: Spec.SPEC.profileImage ? Spec.SPEC.profileImage.def : ""
 
     readonly property var terminalOptions: ["ghostty", "kitty", "foot", "alacritty", "wezterm", "konsole", "gnome-terminal", "xterm"]
     property var installedTerminals: []

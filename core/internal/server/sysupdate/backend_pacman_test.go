@@ -100,3 +100,11 @@ discord 0.0.108-1 -> 0.0.109-1 [ignored]`,
 		})
 	}
 }
+
+func TestOmarchyUpgradeArgv(t *testing.T) {
+	want := []string{"omarchy", "update"}
+	got := omarchyUpgradeArgv()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("omarchyUpgradeArgv() = %v, want %v", got, want)
+	}
+}

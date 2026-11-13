@@ -27,6 +27,8 @@ Item {
         }
     }
 
+    onPathChanged: { if (connected) _restartSocket(); }
+
     // Quickshell's Socket cannot redial after a failed attempt: its dead
     // QLocalSocket is only cleared when a *successful* connection closes, and
     // setting connected back to true is a no-op while the object exists. Every

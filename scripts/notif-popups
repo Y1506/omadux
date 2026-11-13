@@ -2,21 +2,28 @@
 set -Eeuo pipefail
 
 action="${1:-status}"
+pid="${2:-$$}"
+rt="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 case "$action" in
     claim)
+        printf '{"pid":%s,"popups":true}\n' "$pid" > "$rt/omacale-notifs-claim.json" 2>/dev/null || true
+        printf '{"pid":%s,"popups":true}\n' "$pid" > "$rt/omadux-notifs-claim.json" 2>/dev/null || true
         if command -v makoctl >/dev/null 2>&1; then
-            makoctl mode -a do-not-disturb >/dev/null 2>&1 || true
+            timeout 1 makoctl mode -a do-not-disturb >/dev/null 2>&1 || true
         fi
         ;;
     release)
+        rm -f "$rt/omacale-notifs-claim.json" "$rt/omadux-notifs-claim.json" 2>/dev/null || true
         if command -v makoctl >/dev/null 2>&1; then
-            makoctl mode -r do-not-disturb >/dev/null 2>&1 || true
+            timeout 1 makoctl mode -r do-not-disturb >/dev/null 2>&1 || true
         fi
         ;;
     status)
-        if command -v makoctl >/dev/null 2>&1; then
-            makoctl mode 2>/dev/null || echo "unknown"
+        if [ -f "$rt/omadux-notifs-claim.json" ] || [ -f "$rt/omacale-notifs-claim.json" ]; then
+            echo "claimed"
+        elif command -v makoctl >/dev/null 2>&1; then
+            timeout 1 makoctl mode 2>/dev/null || echo "unknown"
         else
             echo "missing"
         fi

@@ -67,18 +67,36 @@ func parseTargetsFromIPCShowOutput(output string) ipcTargets {
 
 func buildQsIPCBaseArgs() ([]string, error) {
 	cmdArgs := []string{"ipc"}
-	switch pid, ok := shellApp.SessionPID(); {
-	case ok:
+	if pid, ok := shellApp.SessionPID(); ok {
 		cmdArgs = append(cmdArgs, "--pid", strconv.Itoa(pid))
-	default:
-		if err := shellApp.ResolveConfig(nil, nil); err != nil {
-			return nil, err
+		return cmdArgs, nil
+	}
+
+	if sock := qsipc.DiscoverSocket(); sock != "" {
+		parts := strings.Split(sock, string(filepath.Separator))
+		for i, part := range parts {
+			if part == "by-pid" && i+1 < len(parts) {
+				cmdArgs = append(cmdArgs, "--pid", parts[i+1])
+				return cmdArgs, nil
+			}
 		}
+	}
+
+	if _, err := os.Stat("/usr/share/omarchy/shell"); err == nil {
 		if qsHasAnyDisplay() {
 			cmdArgs = append(cmdArgs, "--any-display")
 		}
-		cmdArgs = append(cmdArgs, "-p", shellApp.ConfigPath())
+		cmdArgs = append(cmdArgs, "-p", "/usr/share/omarchy/shell")
+		return cmdArgs, nil
 	}
+
+	if err := shellApp.ResolveConfig(nil, nil); err != nil {
+		return nil, err
+	}
+	if qsHasAnyDisplay() {
+		cmdArgs = append(cmdArgs, "--any-display")
+	}
+	cmdArgs = append(cmdArgs, "-p", shellApp.ConfigPath())
 	return cmdArgs, nil
 }
 
@@ -225,19 +243,28 @@ func tryDirectIPCCall(args []string) bool {
 	if len(args) < 3 {
 		return false
 	}
-	pid, ok := shellApp.SessionPID()
-	if !ok {
-		return false
+	if pid, ok := shellApp.SessionPID(); ok {
+		result, isVoid, err := qsipc.Call(qsipc.SocketPathForPID(pid), args[1], args[2], args[3:])
+		if err == nil {
+			if !isVoid {
+				fmt.Println(result)
+			}
+			return true
+		}
 	}
-	result, isVoid, err := qsipc.Call(qsipc.SocketPathForPID(pid), args[1], args[2], args[3:])
-	if err != nil {
-		log.Debugf("Direct Quickshell IPC failed, falling back to qs: %v", err)
-		return false
+
+	if sock := qsipc.DiscoverSocket(); sock != "" {
+		result, isVoid, err := qsipc.Call(sock, args[1], args[2], args[3:])
+		if err == nil {
+			if !isVoid {
+				fmt.Println(result)
+			}
+			return true
+		}
+		log.Debugf("Direct Quickshell IPC via %s failed: %v", sock, err)
 	}
-	if !isVoid {
-		fmt.Println(result)
-	}
-	return true
+
+	return false
 }
 
 func printIPCHelp() {

@@ -46,6 +46,18 @@ var LOCAL_SPEC = {
     enableOsdTakeover: {
         def: true
     },
+    omaduxKeybindTakeover: {
+        def: true
+    },
+    omaduxLockTakeover: {
+        def: false
+    },
+    omaduxNotifTakeover: {
+        def: true
+    },
+    omaduxOsdTakeover: {
+        def: true
+    },
     dockConfigs: {
         def: [DockConfig.create("dock", "Dock")]
     },
@@ -1157,13 +1169,13 @@ var LOCAL_SPEC = {
         def: true
     },
     acMonitorTimeout: {
-        def: 0
+        def: 300
     },
     acLockTimeout: {
-        def: 0
+        def: 600
     },
     acSuspendTimeout: {
-        def: 0
+        def: 900
     },
     acSuspendBehavior: {
         def: 0
@@ -1175,13 +1187,13 @@ var LOCAL_SPEC = {
         def: 0
     },
     batteryMonitorTimeout: {
-        def: 0
+        def: 180
     },
     batteryLockTimeout: {
-        def: 0
+        def: 300
     },
     batterySuspendTimeout: {
-        def: 0
+        def: 600
     },
     batterySuspendBehavior: {
         def: 0

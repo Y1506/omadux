@@ -18,7 +18,7 @@ Item {
 
     function claim() {
         if (!root.enabled) return;
-        proc.command = [root.osdScript, "claim"];
+        proc.command = [root.osdScript, "claim", String(Quickshell.processId)];
         proc.running = true;
     }
 

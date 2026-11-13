@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 	"unicode/utf16"
@@ -150,4 +151,39 @@ func readQString(r io.Reader) (string, error) {
 // SocketPathForPID returns the instance IPC socket used by qs --pid.
 func SocketPathForPID(pid int) string {
 	return filepath.Join(utils.RuntimeDir(), "quickshell", "by-pid", fmt.Sprint(pid), "ipc.sock")
+}
+
+// DiscoverSocket returns the path to the first connectable Quickshell IPC socket found
+// in $XDG_RUNTIME_DIR/quickshell/by-pid/*/ipc.sock or $XDG_RUNTIME_DIR/quickshell/by-id/*/ipc.sock.
+func DiscoverSocket() string {
+	runtimeDir := utils.RuntimeDir()
+	qsDir := filepath.Join(runtimeDir, "quickshell")
+
+	// 1. Check by-pid symlinks
+	byPidDir := filepath.Join(qsDir, "by-pid")
+	if entries, err := os.ReadDir(byPidDir); err == nil {
+		for _, e := range entries {
+			sock := filepath.Join(byPidDir, e.Name(), "ipc.sock")
+			if conn, err := net.DialTimeout("unix", sock, 100*time.Millisecond); err == nil {
+				conn.Close()
+				return sock
+			}
+		}
+	}
+
+	// 2. Check by-id sockets
+	byIdDir := filepath.Join(qsDir, "by-id")
+	if entries, err := os.ReadDir(byIdDir); err == nil {
+		for _, e := range entries {
+			if e.IsDir() {
+				sock := filepath.Join(byIdDir, e.Name(), "ipc.sock")
+				if conn, err := net.DialTimeout("unix", sock, 100*time.Millisecond); err == nil {
+					conn.Close()
+					return sock
+				}
+			}
+		}
+	}
+
+	return ""
 }

@@ -2,20 +2,27 @@
 set -Eeuo pipefail
 
 action="${1:-status}"
+pid="${2:-$$}"
+rt="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 case "$action" in
     claim)
+        printf '{"pid":%s}\n' "$pid" > "$rt/omacale-osd-claim.json" 2>/dev/null || true
+        printf '{"pid":%s}\n' "$pid" > "$rt/omadux-osd-claim.json" 2>/dev/null || true
         if pgrep -x swayosd-server >/dev/null 2>&1; then
-            systemctl --user stop swayosd-server >/dev/null 2>&1 || pkill -x swayosd-server || true
+            timeout 1 systemctl --user stop swayosd-server >/dev/null 2>&1 || pkill -x swayosd-server || true
         fi
         ;;
     release)
+        rm -f "$rt/omacale-osd-claim.json" "$rt/omadux-osd-claim.json" 2>/dev/null || true
         if command -v swayosd-server >/dev/null 2>&1; then
-            systemctl --user start swayosd-server >/dev/null 2>&1 || nohup swayosd-server >/dev/null 2>&1 &
+            timeout 1 systemctl --user start swayosd-server >/dev/null 2>&1 || nohup swayosd-server >/dev/null 2>&1 &
         fi
         ;;
     status)
-        if pgrep -x swayosd-server >/dev/null 2>&1; then
+        if [ -f "$rt/omadux-osd-claim.json" ] || [ -f "$rt/omacale-osd-claim.json" ]; then
+            echo "claimed"
+        elif pgrep -x swayosd-server >/dev/null 2>&1; then
             echo "active"
         else
             echo "inactive"

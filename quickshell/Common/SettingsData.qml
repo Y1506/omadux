@@ -167,6 +167,10 @@ Singleton {
     property bool enableLockTakeover: Spec.SPEC.enableLockTakeover ? Spec.SPEC.enableLockTakeover.def : true
     property bool enableNotifTakeover: Spec.SPEC.enableNotifTakeover ? Spec.SPEC.enableNotifTakeover.def : true
     property bool enableOsdTakeover: Spec.SPEC.enableOsdTakeover ? Spec.SPEC.enableOsdTakeover.def : true
+    property bool omaduxKeybindTakeover: Spec.SPEC.omaduxKeybindTakeover ? Spec.SPEC.omaduxKeybindTakeover.def : true
+    property bool omaduxLockTakeover: Spec.SPEC.omaduxLockTakeover ? Spec.SPEC.omaduxLockTakeover.def : false
+    property bool omaduxNotifTakeover: Spec.SPEC.omaduxNotifTakeover ? Spec.SPEC.omaduxNotifTakeover.def : true
+    property bool omaduxOsdTakeover: Spec.SPEC.omaduxOsdTakeover ? Spec.SPEC.omaduxOsdTakeover.def : true
     property string currentThemeCategory: Spec.SPEC.currentThemeCategory.def
     property string customThemeFile: Spec.SPEC.customThemeFile.def
     property var registryThemeVariants: Spec.SPEC.registryThemeVariants.def
@@ -762,6 +766,10 @@ Singleton {
     property int batterySuspendBehavior: SettingsData.SuspendBehavior.Suspend
     property string batteryProfileName: Spec.SPEC.batteryProfileName.def
     property int batteryPostLockMonitorTimeout: Spec.SPEC.batteryPostLockMonitorTimeout.def
+    property alias batMonitorTimeout: root.batteryMonitorTimeout
+    property alias batLockTimeout: root.batteryLockTimeout
+    property alias batSuspendTimeout: root.batterySuspendTimeout
+    property alias batPostLockMonitorTimeout: root.batteryPostLockMonitorTimeout
     property int batteryChargeLimit: Spec.SPEC.batteryChargeLimit.def
     property bool batteryScaleToChargeLimit: Spec.SPEC.batteryScaleToChargeLimit.def
     property bool batteryScaleAlertThresholds: Spec.SPEC.batteryScaleAlertThresholds.def
@@ -1928,6 +1936,10 @@ Singleton {
         if (key === "frameEnabled" && value)
             clearIslandBars();
         return true;
+    }
+
+    function setControlCenterWidgets(widgets) {
+        return set("controlCenterWidgets", widgets);
     }
 
     function hasSetting(key) {

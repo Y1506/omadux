@@ -19,6 +19,15 @@ Singleton {
     readonly property bool mediaInhibitActive: MprisController.isPlaying
     readonly property bool autoInhibitActive: fullscreenInhibitActive || mediaInhibitActive
 
+    readonly property string actualInhibitReason: {
+        if (!enabled) return "idle disabled";
+        if (SessionService.idleInhibited) return SessionService.inhibitReason || "manual inhibit";
+        if (externalInhibitActive) return "external screensaver inhibitor";
+        if (fullscreenInhibitActive) return "fullscreen window";
+        if (mediaInhibitActive) return "media playing";
+        return "";
+    }
+
     readonly property bool isOnBattery: BatteryService.batteryAvailable && !BatteryService.isPluggedIn
     readonly property int monitorTimeout: isOnBattery ? SettingsData.batteryMonitorTimeout : SettingsData.acMonitorTimeout
     readonly property int lockTimeout: isOnBattery ? SettingsData.batteryLockTimeout : SettingsData.acLockTimeout

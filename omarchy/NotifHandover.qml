@@ -18,7 +18,7 @@ Item {
 
     function claim() {
         if (!root.enabled) return;
-        proc.command = [root.notifScript, "claim"];
+        proc.command = [root.notifScript, "claim", String(Quickshell.processId)];
         proc.running = true;
     }
 

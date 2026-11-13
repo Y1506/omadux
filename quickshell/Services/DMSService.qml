@@ -89,7 +89,7 @@ Singleton {
         id: connectTimer
         interval: 1000
         repeat: true
-        running: !root.isConnected && !requestSocket.connected
+        running: !root.isConnected
         onTriggered: {
             if (!root.isConnected) {
                 root.reconnect();

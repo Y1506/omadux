@@ -296,6 +296,9 @@ func Run(opts Options) error {
 	if opts.ShellDir == "" {
 		return fmt.Errorf("shell-dir is required")
 	}
+	if absShellDir, err := filepath.Abs(opts.ShellDir); err == nil {
+		opts.ShellDir = absShellDir
+	}
 	if opts.ConfigDir == "" {
 		return fmt.Errorf("config-dir is required")
 	}
@@ -304,6 +307,22 @@ func Run(opts Options) error {
 	}
 	if opts.Value == "" {
 		return fmt.Errorf("value is required")
+	}
+	if opts.Kind == "image" {
+		if info, err := os.Stat(opts.Value); err == nil && info.IsDir() {
+			log.Warnf("Image path %s is a directory, scanning for first image file", opts.Value)
+			entries, _ := os.ReadDir(opts.Value)
+			for _, e := range entries {
+				if !e.IsDir() {
+					ext := strings.ToLower(filepath.Ext(e.Name()))
+					if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".webp" {
+						opts.Value = filepath.Join(opts.Value, e.Name())
+						log.Infof("Resolved directory to image file: %s", opts.Value)
+						break
+					}
+				}
+			}
+		}
 	}
 	if opts.Mode == "" {
 		opts.Mode = ColorModeDark

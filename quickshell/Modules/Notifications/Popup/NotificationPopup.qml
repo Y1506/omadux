@@ -197,7 +197,13 @@ Item {
             "timeStr": data.timeStr,
             "urgency": data.urgency,
             "actions": Array.from(data.actions || [], action => ({
-                        "text": action.text
+                        "identifier": action.identifier ?? "",
+                        "text": action.text ?? "",
+                        "invoke": () => {
+                            if (typeof action.invoke === "function") {
+                                action.invoke();
+                            }
+                        }
                     }))
         };
     }
