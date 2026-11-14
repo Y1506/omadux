@@ -313,7 +313,7 @@ Singleton {
     }
 
     function fixDmsBindsInclude() {
-        if (fixing || dmsBindsIncluded || !compositorConfigDir)
+        if (fixing || dmsBindsIncluded || !compositorConfigDir || includeCompositor === "hyprland")
             return;
         if (readOnly) {
             showHyprlandReadOnlyWarning();

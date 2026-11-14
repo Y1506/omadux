@@ -37,6 +37,18 @@ Singleton {
 
     property string socketPath: Quickshell.env("DMS_SOCKET") || ""
 
+    onSocketPathChanged: {
+        if (root.socketPath.length > 0) {
+            requestSocket.connected = false;
+            Qt.callLater(() => {
+                requestSocket.connected = root.socketPath.length > 0;
+            });
+        } else {
+            requestSocket.connected = false;
+            subscribeSocket.connected = false;
+        }
+    }
+
     Process {
         id: socketDiscoveryProc
         command: ["sh", "-c", "for s in \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/dms*.sock \"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}\"/danklinux*.sock; do [ -S \"$s\" ] && echo \"$s\" && exit 0; done; exit 1"]
@@ -156,7 +168,7 @@ Singleton {
     DCommon.DSocket {
         id: requestSocket
         path: root.socketPath
-        connected: false
+        connected: root.socketPath.length > 0
 
         onConnectionStateChanged: {
             if (connected) {

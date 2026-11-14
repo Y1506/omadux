@@ -19,16 +19,4 @@ Socket {
         write(message);
         flush();
     }
-
-    onPathChanged: {
-        if (root.path && root.path.length > 0) {
-            root.connected = false;
-            Qt.callLater(() => {
-                if (root.path && root.path.length > 0)
-                    root.connected = true;
-            });
-        } else {
-            root.connected = false;
-        }
-    }
 }

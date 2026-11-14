@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import "../quickshell/Common"
 
 Item {
@@ -28,6 +29,16 @@ Item {
         if (!root.enabled) return;
         batchProc.command = [root.kbScript, "--restore"];
         batchProc.running = true;
+    }
+
+    Connections {
+        target: typeof Hyprland !== "undefined" ? Hyprland : null
+
+        function onRawEvent(event) {
+            if (event && event.name === "configreloaded") {
+                root.applyBinds();
+            }
+        }
     }
 
     Process {

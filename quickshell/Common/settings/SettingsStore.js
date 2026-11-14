@@ -257,6 +257,10 @@ function toJson(root, setKeys) {
     return out;
 }
 
+function serializeSettings(root, setKeys) {
+    return toJson(root, setKeys);
+}
+
 function migrateToVersion(obj, targetVersion) {
     if (!obj)
         return null;

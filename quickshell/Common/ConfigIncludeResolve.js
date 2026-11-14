@@ -71,8 +71,21 @@ function tomlIncludedCommand(fragment, dmsBin) {
     return `${shQuote(dmsBin || "dms")} config resolve-include mangowc ${shQuote(fragment)} 2>/dev/null | grep -Fq '"included":true'`;
 }
 
+function isHyprlandManagedByOmarchy(configFile, compositor) {
+    if (compositor !== "hyprland" && !String(configFile ?? "").endsWith("hyprland.lua"))
+        return false;
+    const path = String(configFile ?? "");
+    if (path.includes("/.config/hypr") || path.includes("/.config/"))
+        return true;
+    if (typeof Quickshell !== "undefined")
+        return true;
+    return false;
+}
+
 function buildRepairScript(options) {
     const configFile = options.configFile;
+    if (isHyprlandManagedByOmarchy(configFile, options.compositor))
+        return "";
     const backupFile = options.backupFile;
     const fragments = options.fragmentFiles || (options.fragmentFile ? [options.fragmentFile] : []);
     const includes = options.includes || [
@@ -231,11 +244,14 @@ function repairScriptFor(kind, compositor, configDir, backupFile, configName, dm
     const paths = includePaths(kind, compositor, configDir, configName);
     if (!paths)
         return "";
+    if (isHyprlandManagedByOmarchy(paths.configFile, compositor))
+        return "";
     return buildRepairScript({
         configFile: paths.configFile,
         backupFile: backupFile,
         fragmentFiles: paths.fragmentFiles,
         includes: paths.includes,
+        compositor: compositor,
         dmsBin: dmsBin
     });
 }

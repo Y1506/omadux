@@ -38,6 +38,10 @@ function toJson(root) {
     return out;
 }
 
+function serializeSession(root) {
+    return toJson(root);
+}
+
 function migrateToVersion(obj, targetVersion, settingsData) {
     if (!obj)
         return null;

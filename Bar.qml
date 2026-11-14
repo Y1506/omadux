@@ -51,291 +51,265 @@ PanelWindow {
         Host.cache = CacheData;
     }
 
+    function doToggle() {
+        if (typeof ModalManager !== "undefined") ModalManager.toggleDefault();
+    }
+    function doLauncher() {
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
+            PopoutService.toggleLauncher();
+        } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
+            ModalManager.openLauncher();
+        }
+    }
+    function doControlCenter() {
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleControlCenter === "function") {
+            PopoutService.toggleControlCenter();
+        }
+    }
+    function doNotifications() {
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
+            PopoutService.toggleNotificationCenter();
+        } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openNotifications === "function") {
+            ModalManager.openNotifications();
+        }
+    }
+    function doSettings() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
+            ModalManager.openSettings();
+        }
+    }
+    function doClipboard() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
+            ModalManager.openClipboard();
+        } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
+            PopoutService.toggleClipboard();
+        }
+    }
+    function doEmoji() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openEmoji === "function") {
+            ModalManager.openEmoji();
+        } else {
+            doLauncher();
+        }
+    }
+    function doSession() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openPowerMenu === "function") {
+            ModalManager.openPowerMenu();
+        }
+    }
+    function doLock() {
+        if (typeof LockService !== "undefined" && typeof LockService.lockSession === "function") {
+            LockService.lockSession();
+        } else if (typeof SessionService !== "undefined" && typeof SessionService.lock === "function") {
+            SessionService.lock();
+        } else if (typeof ShellCore !== "undefined" && typeof ShellCore.lock === "function") {
+            ShellCore.lock();
+        }
+    }
+    function doUnlock() {
+        if (typeof LockService !== "undefined" && typeof LockService.unlockSession === "function") {
+            LockService.unlockSession();
+        }
+    }
+    function doKeybinds() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openKeybinds === "function") {
+            ModalManager.openKeybinds();
+        }
+    }
+    function doDnd() {
+        if (typeof NotificationService !== "undefined") {
+            NotificationService.dnd = !NotificationService.dnd;
+        }
+    }
+    function doDash() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openDash === "function") {
+            ModalManager.openDash();
+        } else {
+            doControlCenter();
+        }
+    }
+    function doDashMedia() {
+        if (typeof ModalManager !== "undefined" && typeof ModalManager.openDashMedia === "function") {
+            ModalManager.openDashMedia();
+        } else {
+            doControlCenter();
+        }
+    }
+    function doReloadTheme() {
+        omarchyThemeSync.syncNow();
+    }
+    function doVolUp() {
+        if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
+            AudioService.increaseVolume();
+        }
+    }
+    function doVolDown() {
+        if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
+            AudioService.decreaseVolume();
+        }
+    }
+    function doVolMute() {
+        if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
+            AudioService.toggleMute();
+        }
+    }
+    function doMicMute() {
+        if (typeof AudioService !== "undefined" && typeof AudioService.toggleMicMute === "function") {
+            AudioService.toggleMicMute();
+        }
+    }
+    function doBriUp() {
+        if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
+            BrightnessService.increaseBrightness();
+        }
+    }
+    function doBriDown() {
+        if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
+            BrightnessService.decreaseBrightness();
+        }
+    }
+
     // Quattro & Omarchy CLI IPC Router
     IpcHandler {
         target: "plugin:y1506.omadux.bar"
 
-        function toggle() {
-            if (typeof ModalManager !== "undefined") {
-                ModalManager.toggleDefault();
-            }
-        }
-
-        function launcher() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
-                ModalManager.openLauncher();
-            } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
-                PopoutService.toggleLauncher();
-            }
-        }
-
-        function emoji() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openEmoji === "function") {
-                ModalManager.openEmoji();
-            } else {
-                launcher();
-            }
-        }
-
-        function clipboard() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
-                ModalManager.openClipboard();
-            } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
-                PopoutService.toggleClipboard();
-            }
-        }
-
-        function settings() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
-                ModalManager.openSettings();
-            }
-        }
-
-        function toggleSettings() {
-            settings();
-        }
-
-        function toggleNotifications() {
-            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
-                PopoutService.toggleNotificationCenter();
-            }
-        }
-
-        function notifications() {
-            toggleNotifications();
-        }
-
-        function lock() {
-            if (typeof SessionService !== "undefined" && typeof SessionService.lock === "function") {
-                SessionService.lock();
-            } else if (typeof ShellCore !== "undefined" && typeof ShellCore.lock === "function") {
-                ShellCore.lock();
-            }
-        }
-
-        function volumeUp() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
-                AudioService.increaseVolume();
-            }
-        }
-
-        function volumeDown() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
-                AudioService.decreaseVolume();
-            }
-        }
-
-        function volumeMute() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
-                AudioService.toggleMute();
-            }
-        }
-
-        function brightnessUp() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
-                BrightnessService.increaseBrightness();
-            }
-        }
-
-        function brightnessDown() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
-                BrightnessService.decreaseBrightness();
-            }
-        }
-
-        function session() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openPowerMenu === "function") {
-                ModalManager.openPowerMenu();
-            }
-        }
-
-        function keybinds() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openKeybinds === "function") {
-                ModalManager.openKeybinds();
-            }
-        }
-
-        function dnd() {
-            if (typeof NotificationService !== "undefined") {
-                NotificationService.dnd = !NotificationService.dnd;
-            }
-        }
-
-        function notifications() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openNotifications === "function") {
-                ModalManager.openNotifications();
-            } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotifications === "function") {
-                PopoutService.toggleNotifications();
-            }
-        }
-
-        function dash() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openDash === "function") {
-                ModalManager.openDash();
-            }
-        }
-
-        function dashMedia() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openDashMedia === "function") {
-                ModalManager.openDashMedia();
-            }
-        }
-
-        function lock() {
-            if (typeof LockService !== "undefined" && typeof LockService.lockSession === "function") {
-                LockService.lockSession();
-            }
-        }
-
-        function unlock() {
-            if (typeof LockService !== "undefined" && typeof LockService.unlockSession === "function") {
-                LockService.unlockSession();
-            }
-        }
-
-        function reloadTheme() {
-            omarchyThemeSync.syncNow();
-        }
-
-        function volUp() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
-                AudioService.increaseVolume();
-            }
-        }
-
-        function volDown() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
-                AudioService.decreaseVolume();
-            }
-        }
-
-        function volMute() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
-                AudioService.toggleMute();
-            }
-        }
-
-        function micMute() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMicMute === "function") {
-                AudioService.toggleMicMute();
-            }
-        }
-
-        function briUp() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
-                BrightnessService.increaseBrightness();
-            }
-        }
-
-        function briDown() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
-                BrightnessService.decreaseBrightness();
-            }
-        }
+        function toggle() { root.doToggle(); }
+        function launcher() { root.doLauncher(); }
+        function toggleLauncher() { root.doLauncher(); }
+        function controlCenter() { root.doControlCenter(); }
+        function toggleControlCenter() { root.doControlCenter(); }
+        function notifications() { root.doNotifications(); }
+        function toggleNotifications() { root.doNotifications(); }
+        function settings() { root.doSettings(); }
+        function toggleSettings() { root.doSettings(); }
+        function clipboard() { root.doClipboard(); }
+        function toggleClipboard() { root.doClipboard(); }
+        function emoji() { root.doEmoji(); }
+        function session() { root.doSession(); }
+        function lock() { root.doLock(); }
+        function unlock() { root.doUnlock(); }
+        function keybinds() { root.doKeybinds(); }
+        function dnd() { root.doDnd(); }
+        function dash() { root.doDash(); }
+        function dashMedia() { root.doDashMedia(); }
+        function reloadTheme() { root.doReloadTheme(); }
+        function volumeUp() { root.doVolUp(); }
+        function volUp() { root.doVolUp(); }
+        function volumeDown() { root.doVolDown(); }
+        function volDown() { root.doVolDown(); }
+        function volumeMute() { root.doVolMute(); }
+        function volMute() { root.doVolMute(); }
+        function micMute() { root.doMicMute(); }
+        function brightnessUp() { root.doBriUp(); }
+        function briUp() { root.doBriUp(); }
+        function brightnessDown() { root.doBriDown(); }
+        function briDown() { root.doBriDown(); }
+        function dashboard() { root.doDash(); }
+        function sidebar() { root.doNotifications(); }
+        function utilities() { root.doControlCenter(); }
+        function overview() { root.doLauncher(); }
     }
 
     IpcHandler {
         target: "omadux"
 
-        function toggle() {
-            if (typeof ModalManager !== "undefined") {
-                ModalManager.toggleDefault();
-            }
-        }
+        function toggle() { root.doToggle(); }
+        function launcher() { root.doLauncher(); }
+        function toggleLauncher() { root.doLauncher(); }
+        function controlCenter() { root.doControlCenter(); }
+        function toggleControlCenter() { root.doControlCenter(); }
+        function notifications() { root.doNotifications(); }
+        function toggleNotifications() { root.doNotifications(); }
+        function settings() { root.doSettings(); }
+        function toggleSettings() { root.doSettings(); }
+        function clipboard() { root.doClipboard(); }
+        function toggleClipboard() { root.doClipboard(); }
+        function emoji() { root.doEmoji(); }
+        function session() { root.doSession(); }
+        function lock() { root.doLock(); }
+        function unlock() { root.doUnlock(); }
+        function keybinds() { root.doKeybinds(); }
+        function dnd() { root.doDnd(); }
+        function dash() { root.doDash(); }
+        function dashMedia() { root.doDashMedia(); }
+        function reloadTheme() { root.doReloadTheme(); }
+        function volumeUp() { root.doVolUp(); }
+        function volUp() { root.doVolUp(); }
+        function volumeDown() { root.doVolDown(); }
+        function volDown() { root.doVolDown(); }
+        function volumeMute() { root.doVolMute(); }
+        function volMute() { root.doVolMute(); }
+        function micMute() { root.doMicMute(); }
+        function brightnessUp() { root.doBriUp(); }
+        function briUp() { root.doBriUp(); }
+        function brightnessDown() { root.doBriDown(); }
+        function briDown() { root.doBriDown(); }
+        function dashboard() { root.doDash(); }
+        function sidebar() { root.doNotifications(); }
+        function utilities() { root.doControlCenter(); }
+        function overview() { root.doLauncher(); }
+    }
 
-        function toggleLauncher() {
-            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
-                PopoutService.toggleLauncher();
-            } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
-                ModalManager.openLauncher();
-            }
-        }
+    IpcHandler {
+        target: "y1506.dux"
 
-        function launcher() {
-            toggleLauncher();
+        function launcher() { root.doLauncher(); }
+        function dashboard() { root.doDash(); }
+        function dashboardTab(tab) {
+            if (tab === "media") root.doDashMedia();
+            else root.doDash();
         }
+        function sidebar() { root.doNotifications(); }
+        function utilities() { root.doControlCenter(); }
+        function session() { root.doSession(); }
+        function settings() { root.doSettings(); }
+        function overview() { root.doLauncher(); }
+        function menu() { root.doLauncher(); }
+        function wallpapers() { root.doSettings(); }
+        function themes() { root.doReloadTheme(); }
+        function clipboard() { root.doClipboard(); }
+        function barFocus() { root.doToggle(); }
+        function popout(name) {
+            if (name === "update") root.doSettings();
+            else root.doControlCenter();
+        }
+        function display() { root.doSettings(); }
+        function brightness(step) {
+            if (typeof step === "string" && step.startsWith("-")) root.doBriDown();
+            else root.doBriUp();
+        }
+        function windowInfo() {}
+    }
 
-        function toggleControlCenter() {
-            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleControlCenter === "function") {
-                PopoutService.toggleControlCenter();
-            }
-        }
+    IpcHandler {
+        target: "omacale"
 
-        function controlCenter() {
-            toggleControlCenter();
+        function launcher() { root.doLauncher(); }
+        function dashboard() { root.doDash(); }
+        function dashboardTab(tab) {
+            if (tab === "media") root.doDashMedia();
+            else root.doDash();
         }
-
-        function emoji() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openEmoji === "function") {
-                ModalManager.openEmoji();
-            }
+        function sidebar() { root.doNotifications(); }
+        function utilities() { root.doControlCenter(); }
+        function session() { root.doSession(); }
+        function settings() { root.doSettings(); }
+        function overview() { root.doLauncher(); }
+        function menu() { root.doLauncher(); }
+        function wallpapers() { root.doSettings(); }
+        function themes() { root.doReloadTheme(); }
+        function clipboard() { root.doClipboard(); }
+        function barFocus() { root.doToggle(); }
+        function popout(name) {
+            if (name === "update") root.doSettings();
+            else root.doControlCenter();
         }
-
-        function clipboard() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
-                ModalManager.openClipboard();
-            } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
-                PopoutService.toggleClipboard();
-            }
+        function display() { root.doSettings(); }
+        function brightness(step) {
+            if (typeof step === "string" && step.startsWith("-")) root.doBriDown();
+            else root.doBriUp();
         }
-
-        function settings() {
-            if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
-                ModalManager.openSettings();
-            }
-        }
-
-        function toggleSettings() {
-            settings();
-        }
-
-        function toggleNotifications() {
-            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
-                PopoutService.toggleNotificationCenter();
-            }
-        }
-
-        function notifications() {
-            toggleNotifications();
-        }
-
-        function lock() {
-            if (typeof SessionService !== "undefined" && typeof SessionService.lock === "function") {
-                SessionService.lock();
-            } else if (typeof ShellCore !== "undefined" && typeof ShellCore.lock === "function") {
-                ShellCore.lock();
-            }
-        }
-
-        function volumeUp() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
-                AudioService.increaseVolume();
-            }
-        }
-
-        function volumeDown() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
-                AudioService.decreaseVolume();
-            }
-        }
-
-        function volumeMute() {
-            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
-                AudioService.toggleMute();
-            }
-        }
-
-        function brightnessUp() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
-                BrightnessService.increaseBrightness();
-            }
-        }
-
-        function brightnessDown() {
-            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
-                BrightnessService.decreaseBrightness();
-            }
-        }
+        function windowInfo() {}
     }
 
     // 1. DMS daemon supervisor
