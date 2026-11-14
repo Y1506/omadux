@@ -49,40 +49,60 @@ PanelWindow {
         Host.files = FilesService;
         Host.session = SessionService;
         Host.cache = CacheData;
+
+        if (typeof IpcRegistry !== "undefined") {
+            IpcRegistry.register(ipcBar);
+            IpcRegistry.register(ipcOmadux);
+            IpcRegistry.register(ipcDux);
+            IpcRegistry.register(ipcOmacale);
+        }
+    }
+
+    Component.onDestruction: {
+        if (typeof IpcRegistry !== "undefined") {
+            IpcRegistry.unregister(ipcBar);
+            IpcRegistry.unregister(ipcOmadux);
+            IpcRegistry.unregister(ipcDux);
+            IpcRegistry.unregister(ipcOmacale);
+        }
     }
 
     function doToggle() {
         if (typeof ModalManager !== "undefined") ModalManager.toggleDefault();
     }
     function doLauncher() {
-        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleLauncher === "function") {
-            PopoutService.toggleLauncher();
-        } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openLauncher === "function") {
-            ModalManager.openLauncher();
+        if (typeof PopoutService !== "undefined") {
+            if (typeof PopoutService.toggleDankLauncherV2 === "function") {
+                PopoutService.toggleDankLauncherV2();
+            } else if (typeof PopoutService.toggleSpotlightBar === "function") {
+                PopoutService.toggleSpotlightBar();
+            }
         }
     }
     function doControlCenter() {
         if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleControlCenter === "function") {
-            PopoutService.toggleControlCenter();
+            const screen = CompositorService.getFocusedScreen() ?? (Quickshell.screens[0] || null);
+            PopoutService.toggleControlCenter(undefined, undefined, undefined, undefined, screen);
         }
     }
     function doNotifications() {
-        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
-            PopoutService.toggleNotificationCenter();
-        } else if (typeof ModalManager !== "undefined" && typeof ModalManager.openNotifications === "function") {
-            ModalManager.openNotifications();
+        if (typeof PopoutService !== "undefined") {
+            const screen = CompositorService.getFocusedScreen() ?? (Quickshell.screens[0] || null);
+            if (typeof PopoutService.toggleNotificationCenter === "function") {
+                PopoutService.toggleNotificationCenter(undefined, undefined, undefined, undefined, screen);
+            } else if (typeof PopoutService.openNotificationCenter === "function") {
+                PopoutService.openNotificationCenter(undefined, undefined, undefined, undefined, screen);
+            }
         }
     }
     function doSettings() {
-        if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
-            ModalManager.openSettings();
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleSettings === "function") {
+            PopoutService.toggleSettings();
         }
     }
     function doClipboard() {
-        if (typeof ModalManager !== "undefined" && typeof ModalManager.openClipboard === "function") {
-            ModalManager.openClipboard();
-        } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboard === "function") {
-            PopoutService.toggleClipboard();
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleClipboardHistory === "function") {
+            PopoutService.toggleClipboardHistory();
         }
     }
     function doEmoji() {
@@ -93,8 +113,8 @@ PanelWindow {
         }
     }
     function doSession() {
-        if (typeof ModalManager !== "undefined" && typeof ModalManager.openPowerMenu === "function") {
-            ModalManager.openPowerMenu();
+        if (typeof PopoutService !== "undefined" && typeof PopoutService.togglePowerMenu === "function") {
+            PopoutService.togglePowerMenu();
         }
     }
     function doLock() {
@@ -112,8 +132,10 @@ PanelWindow {
         }
     }
     function doKeybinds() {
-        if (typeof ModalManager !== "undefined" && typeof ModalManager.openKeybinds === "function") {
-            ModalManager.openKeybinds();
+        if (typeof dmsShell !== "undefined" && typeof dmsShell.openHyprKeybindsModal === "function") {
+            dmsShell.openHyprKeybindsModal();
+        } else if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleProcessListModal === "function") {
+            PopoutService.toggleProcessListModal();
         }
     }
     function doDnd() {
@@ -171,6 +193,7 @@ PanelWindow {
 
     // Quattro & Omarchy CLI IPC Router
     IpcHandler {
+        id: ipcBar
         target: "plugin:y1506.omadux.bar"
 
         function toggle() { root.doToggle(); }
@@ -211,6 +234,7 @@ PanelWindow {
     }
 
     IpcHandler {
+        id: ipcOmadux
         target: "omadux"
 
         function toggle() { root.doToggle(); }
@@ -251,6 +275,7 @@ PanelWindow {
     }
 
     IpcHandler {
+        id: ipcDux
         target: "y1506.dux"
 
         function launcher() { root.doLauncher(); }
@@ -282,6 +307,7 @@ PanelWindow {
     }
 
     IpcHandler {
+        id: ipcOmacale
         target: "omacale"
 
         function launcher() { root.doLauncher(); }

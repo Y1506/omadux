@@ -24,6 +24,7 @@ Singleton {
 
     property bool _parseError: false
     property bool _hasLoaded: false
+    readonly property bool _isLoaded: _hasLoaded
     property bool _isReadOnly: false
     property bool _hasUnsavedChanges: false
     property var _loadedSessionSnapshot: null
@@ -1887,9 +1888,19 @@ Singleton {
             _hasUnsavedChanges = false;
             parseSettings(settingsFile.text());
         }
+        onLoadFailed: error => {
+            _hasLoaded = true;
+            _hasUnsavedChanges = false;
+        }
         onSaveFailed: error => {
             root._isReadOnly = true;
             root._hasUnsavedChanges = root._checkForUnsavedChanges();
+        }
+    }
+
+    Component.onDestruction: {
+        if (_hasLoaded && !_parseError && _hasUnsavedChanges) {
+            saveSettings();
         }
     }
 

@@ -745,6 +745,7 @@ Item {
 
     PanelWindow {
         id: contentWindow
+        screen: CompositorService.getFocusedScreen() ?? (Quickshell.screens[0] || null)
         visible: false
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

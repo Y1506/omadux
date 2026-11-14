@@ -202,7 +202,14 @@ Item {
         impl.sourceComponent = hostComponent;
     }
 
+    function _ensureScreen() {
+        if (!screen) {
+            screen = CompositorService.getFocusedScreen() ?? (Quickshell.screens[0] || null);
+        }
+    }
+
     function open() {
+        _ensureScreen();
         _maybeResolveBackend();
         if (impl.item) {
             _pendingOpen = false;
@@ -267,6 +274,7 @@ Item {
     }
 
     function toggle() {
+        _ensureScreen();
         (shouldBeVisible || _pendingOpen) ? close() : open();
     }
 

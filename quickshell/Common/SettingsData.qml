@@ -89,6 +89,7 @@ Singleton {
     property bool _parseError: false
     property bool _pluginParseError: false
     property bool _hasLoaded: false
+    readonly property bool _isLoaded: _hasLoaded
     property bool isReadOnly: false
     property bool unsavedUserChanges: false
     property var pluginSettings: ({})
@@ -2254,14 +2255,16 @@ Singleton {
         return splitSettings;
     }
     function saveSettings() {
-        if (_loading)
+        if (_loading || !_hasLoaded)
             return;
         unsavedUserChanges = true;
         settingsSaveDebounce.restart();
     }
     function _saveSettings(userChanges) {
         let reason = null;
-        if (_loading) {
+        if (!_hasLoaded) {
+            reason = "settings have not loaded yet";
+        } else if (_loading) {
             reason = "some files are being loaded";
         } else if (_parseError) {
             reason = "failed to parse settings.";
@@ -2279,6 +2282,15 @@ Singleton {
         }
         unsavedUserChanges = _anySettingsFile(file => file.fileUnsavedUserChanges);
     }
+
+    function flushSettings() {
+        if (settingsSaveDebounce.running) {
+            settingsSaveDebounce.stop();
+            _saveSettings(true);
+        }
+    }
+
+    Component.onDestruction: flushSettings()
 
     function savePluginSettings() {
         if (_pluginSettingsLoading || _pluginParseError)

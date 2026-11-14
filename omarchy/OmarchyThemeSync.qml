@@ -39,14 +39,14 @@ Item {
     }
 
     function applyTheme() {
-        if (typeof SettingsData !== "undefined") {
+        if (typeof SettingsData !== "undefined" && SettingsData._isLoaded) {
             SettingsData.customThemeFile = root.themeJsonPath;
             SettingsData.wallpaperFolder = root.backgroundsFolder;
         }
         if (typeof Theme !== "undefined" && typeof Theme.switchTheme === "function") {
             Theme.switchTheme("custom", true, false);
         }
-        if (typeof SessionData !== "undefined") {
+        if (typeof SessionData !== "undefined" && SessionData._isLoaded) {
             const bgDir = root.backgroundsFolder;
             SessionData.wallpaperLastPath = bgDir;
             if (root.currentWallpaper.length > 0) {
@@ -60,6 +60,24 @@ Item {
                 SessionData.set("wallpaperFolders", [bgDir].concat(currentFolders));
             }
             SessionData.set("wallpaperCyclingFolderPath", bgDir);
+        }
+    }
+
+    Connections {
+        target: typeof SettingsData !== "undefined" ? SettingsData : null
+        function on_HasLoadedChanged() {
+            if (SettingsData && SettingsData._isLoaded) {
+                root.applyTheme();
+            }
+        }
+    }
+
+    Connections {
+        target: typeof SessionData !== "undefined" ? SessionData : null
+        function on_HasLoadedChanged() {
+            if (SessionData && SessionData._isLoaded) {
+                root.applyTheme();
+            }
         }
     }
 
@@ -104,14 +122,14 @@ Item {
                 const trimmed = String(line).trim();
                 if (trimmed.length > 0) {
                     root.currentWallpaper = trimmed;
-                    if (typeof SessionData !== "undefined") {
+                    if (typeof SessionData !== "undefined" && SessionData._isLoaded) {
                         SessionData.wallpaperPath = trimmed;
                         if (typeof SessionData.setWallpaper === "function") {
                             SessionData.setWallpaper(trimmed);
                         }
                         SessionData.wallpaperLastPath = root.backgroundsFolder;
                     }
-                    if (typeof SettingsData !== "undefined") {
+                    if (typeof SettingsData !== "undefined" && SettingsData._isLoaded) {
                         SettingsData.wallpaperFolder = root.backgroundsFolder;
                     }
                 }
