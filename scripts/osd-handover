@@ -12,12 +12,42 @@ case "$action" in
         if pgrep -x swayosd-server >/dev/null 2>&1; then
             timeout 1 systemctl --user stop swayosd-server >/dev/null 2>&1 || pkill -x swayosd-server || true
         fi
+        python3 -c '
+import json, os
+cfg_path = os.path.expanduser("~/.config/omarchy/shell.json")
+if os.path.exists(cfg_path):
+    try:
+        with open(cfg_path, "r") as f:
+            data = json.load(f)
+        dp = data.setdefault("disabledPlugins", [])
+        if "omarchy.osd" not in dp:
+            dp.append("omarchy.osd")
+            with open(cfg_path, "w") as f:
+                json.dump(data, f, indent=2)
+    except Exception:
+        pass
+' 2>/dev/null || true
         ;;
     release)
         rm -f "$rt/omacale-osd-claim.json" "$rt/omadux-osd-claim.json" 2>/dev/null || true
         if command -v swayosd-server >/dev/null 2>&1; then
             timeout 1 systemctl --user start swayosd-server >/dev/null 2>&1 || nohup swayosd-server >/dev/null 2>&1 &
         fi
+        python3 -c '
+import json, os
+cfg_path = os.path.expanduser("~/.config/omarchy/shell.json")
+if os.path.exists(cfg_path):
+    try:
+        with open(cfg_path, "r") as f:
+            data = json.load(f)
+        dp = data.get("disabledPlugins", [])
+        if "omarchy.osd" in dp:
+            data["disabledPlugins"] = [p for p in dp if p != "omarchy.osd"]
+            with open(cfg_path, "w") as f:
+                json.dump(data, f, indent=2)
+    except Exception:
+        pass
+' 2>/dev/null || true
         ;;
     status)
         if [ -f "$rt/omadux-osd-claim.json" ] || [ -f "$rt/omacale-osd-claim.json" ]; then

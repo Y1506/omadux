@@ -91,6 +91,58 @@ PanelWindow {
             }
         }
 
+        function toggleSettings() {
+            settings();
+        }
+
+        function toggleNotifications() {
+            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
+                PopoutService.toggleNotificationCenter();
+            }
+        }
+
+        function notifications() {
+            toggleNotifications();
+        }
+
+        function lock() {
+            if (typeof SessionService !== "undefined" && typeof SessionService.lock === "function") {
+                SessionService.lock();
+            } else if (typeof ShellCore !== "undefined" && typeof ShellCore.lock === "function") {
+                ShellCore.lock();
+            }
+        }
+
+        function volumeUp() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
+                AudioService.increaseVolume();
+            }
+        }
+
+        function volumeDown() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
+                AudioService.decreaseVolume();
+            }
+        }
+
+        function volumeMute() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
+                AudioService.toggleMute();
+            }
+        }
+
+        function brightnessUp() {
+            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
+                BrightnessService.increaseBrightness();
+            }
+        }
+
+        function brightnessDown() {
+            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
+                BrightnessService.decreaseBrightness();
+            }
+        }
+
         function session() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openPowerMenu === "function") {
                 ModalManager.openPowerMenu();
@@ -230,6 +282,58 @@ PanelWindow {
         function settings() {
             if (typeof ModalManager !== "undefined" && typeof ModalManager.openSettings === "function") {
                 ModalManager.openSettings();
+            }
+        }
+
+        function toggleSettings() {
+            settings();
+        }
+
+        function toggleNotifications() {
+            if (typeof PopoutService !== "undefined" && typeof PopoutService.toggleNotificationCenter === "function") {
+                PopoutService.toggleNotificationCenter();
+            }
+        }
+
+        function notifications() {
+            toggleNotifications();
+        }
+
+        function lock() {
+            if (typeof SessionService !== "undefined" && typeof SessionService.lock === "function") {
+                SessionService.lock();
+            } else if (typeof ShellCore !== "undefined" && typeof ShellCore.lock === "function") {
+                ShellCore.lock();
+            }
+        }
+
+        function volumeUp() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.increaseVolume === "function") {
+                AudioService.increaseVolume();
+            }
+        }
+
+        function volumeDown() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.decreaseVolume === "function") {
+                AudioService.decreaseVolume();
+            }
+        }
+
+        function volumeMute() {
+            if (typeof AudioService !== "undefined" && typeof AudioService.toggleMute === "function") {
+                AudioService.toggleMute();
+            }
+        }
+
+        function brightnessUp() {
+            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.increaseBrightness === "function") {
+                BrightnessService.increaseBrightness();
+            }
+        }
+
+        function brightnessDown() {
+            if (typeof BrightnessService !== "undefined" && typeof BrightnessService.decreaseBrightness === "function") {
+                BrightnessService.decreaseBrightness();
             }
         }
     }

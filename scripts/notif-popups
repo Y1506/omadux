@@ -12,12 +12,42 @@ case "$action" in
         if command -v makoctl >/dev/null 2>&1; then
             timeout 1 makoctl mode -a do-not-disturb >/dev/null 2>&1 || true
         fi
+        python3 -c '
+import json, os
+cfg_path = os.path.expanduser("~/.config/omarchy/shell.json")
+if os.path.exists(cfg_path):
+    try:
+        with open(cfg_path, "r") as f:
+            data = json.load(f)
+        dp = data.setdefault("disabledPlugins", [])
+        if "omarchy.notifications" not in dp:
+            dp.append("omarchy.notifications")
+            with open(cfg_path, "w") as f:
+                json.dump(data, f, indent=2)
+    except Exception:
+        pass
+' 2>/dev/null || true
         ;;
     release)
         rm -f "$rt/omacale-notifs-claim.json" "$rt/omadux-notifs-claim.json" 2>/dev/null || true
         if command -v makoctl >/dev/null 2>&1; then
             timeout 1 makoctl mode -r do-not-disturb >/dev/null 2>&1 || true
         fi
+        python3 -c '
+import json, os
+cfg_path = os.path.expanduser("~/.config/omarchy/shell.json")
+if os.path.exists(cfg_path):
+    try:
+        with open(cfg_path, "r") as f:
+            data = json.load(f)
+        dp = data.get("disabledPlugins", [])
+        if "omarchy.notifications" in dp:
+            data["disabledPlugins"] = [p for p in dp if p != "omarchy.notifications"]
+            with open(cfg_path, "w") as f:
+                json.dump(data, f, indent=2)
+    except Exception:
+        pass
+' 2>/dev/null || true
         ;;
     status)
         if [ -f "$rt/omadux-notifs-claim.json" ] || [ -f "$rt/omacale-notifs-claim.json" ]; then

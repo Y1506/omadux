@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ACTION="${1:---apply}"
+ACTION="${ACTION#--}"
+
+RT="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+BACKUP_FILE="$RT/omadux_hypr_binds_backup.json"
+DMS_BIN="$HOME/.config/omarchy/plugins/omadux/bin/dms"
+[ -x "$DMS_BIN" ] || DMS_BIN="$HOME/.local/bin/dms"
+[ -x "$DMS_BIN" ] || DMS_BIN="dms"
+
+BINDS_TO_TAKEOVER=(
+    "SUPER,Space,toggleLauncher"
+    "SUPER,N,toggleControlCenter"
+    "SUPER,comma,toggleNotifications"
+    "SUPER,L,lock"
+    ",XF86AudioRaiseVolume,volumeUp"
+    ",XF86AudioLowerVolume,volumeDown"
+    ",XF86AudioMute,volumeMute"
+    ",XF86MonBrightnessUp,brightnessUp"
+    ",XF86MonBrightnessDown,brightnessDown"
+)
+
+case "$ACTION" in
+    apply)
+        # 1. Back up existing binds if hyprctl is available
+        if command -v hyprctl >/dev/null 2>&1; then
+            if [ ! -f "$BACKUP_FILE" ]; then
+                hyprctl binds -j > "$BACKUP_FILE" 2>/dev/null || true
+            fi
+
+            # 2. Build hyprctl batch command
+            BATCH_CMDS=()
+            for entry in "${BINDS_TO_TAKEOVER[@]}"; do
+                IFS=',' read -r mod key action <<< "$entry"
+                if [ -n "$mod" ]; then
+                    BATCH_CMDS+=("keyword unbind $mod, $key")
+                    BATCH_CMDS+=("keyword bind $mod, $key, exec, $DMS_BIN ipc call omadux $action")
+                else
+                    BATCH_CMDS+=("keyword unbind , $key")
+                    BATCH_CMDS+=("keyword bind , $key, exec, $DMS_BIN ipc call omadux $action")
+                fi
+            done
+
+            BATCH_STR=$(IFS='; '; echo "${BATCH_CMDS[*]}")
+            hyprctl --batch "$BATCH_STR" >/dev/null 2>&1 || true
+        fi
+        ;;
+    restore)
+        if command -v hyprctl >/dev/null 2>&1; then
+            # 1. Unbind omadux overrides
+            BATCH_CMDS=()
+            for entry in "${BINDS_TO_TAKEOVER[@]}"; do
+                IFS=',' read -r mod key action <<< "$entry"
+                if [ -n "$mod" ]; then
+                    BATCH_CMDS+=("keyword unbind $mod, $key")
+                else
+                    BATCH_CMDS+=("keyword unbind , $key")
+                fi
+            done
+
+            BATCH_STR=$(IFS='; '; echo "${BATCH_CMDS[*]}")
+            hyprctl --batch "$BATCH_STR" >/dev/null 2>&1 || true
+
+            # 2. Restore backed up binds if available
+            if [ -f "$BACKUP_FILE" ]; then
+                python3 -c "
+import json, subprocess, os
+backup_path = '$BACKUP_FILE'
+try:
+    with open(backup_path) as f:
+        binds = json.load(f)
+    restore_cmds = []
+    target_keys = {'Space', 'N', 'comma', 'L', 'XF86AudioRaiseVolume', 'XF86AudioLowerVolume', 'XF86AudioMute', 'XF86MonBrightnessUp', 'XF86MonBrightnessDown'}
+    for b in binds:
+        k = b.get('key', '')
+        if k in target_keys and b.get('dispatcher'):
+            mod = ''
+            mask = b.get('modmask', 0)
+            if mask & 64: mod += 'SUPER'
+            if mask & 4: mod += '_CTRL' if mod else 'CTRL'
+            if mask & 8: mod += '_ALT' if mod else 'ALT'
+            if mask & 1: mod += '_SHIFT' if mod else 'SHIFT'
+            disp = b.get('dispatcher', '')
+            arg = b.get('arg', '')
+            if disp:
+                cmd = f'keyword bind {mod}, {k}, {disp}, {arg}'
+                restore_cmds.append(cmd)
+    if restore_cmds:
+        subprocess.run(['hyprctl', '--batch', '; '.join(restore_cmds)], capture_output=True)
+except Exception:
+    pass
+" 2>/dev/null || true
+                rm -f "$BACKUP_FILE"
+            fi
+        fi
+        ;;
+    status)
+        if [ -f "$BACKUP_FILE" ]; then
+            echo "applied"
+        else
+            echo "unapplied"
+        fi
+        ;;
+    *)
+        echo "Usage: kb-takeover {--apply|--restore|--status}" >&2
+        exit 1
+        ;;
+esac

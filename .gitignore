@@ -5,3 +5,5 @@ bin/*
 __pycache__/
 .superpowers/sdd/*/briefs/
 .superpowers/sdd/*/packages/
+/superpowers
+.superpowers

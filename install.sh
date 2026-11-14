@@ -68,6 +68,11 @@ chmod +x "$PLUGIN_DIR/scripts/omadux" 2>/dev/null || true
 ln -sf "$PLUGIN_DIR/scripts/omadux" "$HOME/.local/bin/omadux"
 ln -sf "$DMS_BIN" "$HOME/.local/bin/dms"
 
+# Ensure DMS legacy compatibility symlinks
+mkdir -p "$HOME/.config/dms" "$HOME/.local/state/dms"
+ln -sfn "$HOME/.config/dms" "$HOME/.config/DankMaterialShell"
+ln -sfn "$HOME/.local/state/dms" "$HOME/.local/state/DankMaterialShell"
+
 # Deploy to Omarchy plugin directories
 OMARCHY_PLUGIN_CONFIG="$HOME/.config/omarchy/plugins/omadux"
 deploy_plugin "$OMARCHY_PLUGIN_CONFIG"

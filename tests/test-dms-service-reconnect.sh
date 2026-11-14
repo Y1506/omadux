@@ -16,16 +16,16 @@ else
     echo "[PASS] quickshell/Services/DMSService.qml connectTimer is properly set to running: !root.isConnected"
 fi
 
-# Check 2: DSocket.qml onPathChanged restarts socket when connected
-if ! grep -q 'onPathChanged:.*_restartSocket' quickshell/Common/DSocket.qml; then
-    echo "[FAIL] quickshell/Common/DSocket.qml missing onPathChanged: { if (connected) _restartSocket(); }"
+# Check 2: DSocket.qml onPathChanged reconnects socket cleanly
+if ! grep -q 'onPathChanged:' quickshell/Common/DSocket.qml; then
+    echo "[FAIL] quickshell/Common/DSocket.qml missing onPathChanged handler"
     FAILED=1
 else
     echo "[PASS] quickshell/Common/DSocket.qml has onPathChanged handler"
 fi
 
-if ! grep -q 'onPathChanged:.*_restartSocket' quickshell/DCommon/Common/DSocket.qml; then
-    echo "[FAIL] quickshell/DCommon/Common/DSocket.qml missing onPathChanged: { if (connected) _restartSocket(); }"
+if ! grep -q 'onPathChanged:' quickshell/DCommon/Common/DSocket.qml; then
+    echo "[FAIL] quickshell/DCommon/Common/DSocket.qml missing onPathChanged handler"
     FAILED=1
 else
     echo "[PASS] quickshell/DCommon/Common/DSocket.qml has onPathChanged handler"

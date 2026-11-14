@@ -79,10 +79,12 @@ Singleton {
         requestSocket.connected = false;
         subscribeSocket.connected = false;
         findSocket();
-        if (socketPath && socketPath.length > 0) {
-            requestSocket.path = socketPath;
-            requestSocket.connected = true;
-        }
+        Qt.callLater(() => {
+            if (socketPath && socketPath.length > 0) {
+                requestSocket.path = socketPath;
+                requestSocket.connected = true;
+            }
+        });
     }
 
     Timer {
@@ -157,7 +159,7 @@ Singleton {
         connected: false
 
         onConnectionStateChanged: {
-            if (linkUp) {
+            if (connected) {
                 root.isConnected = true;
                 root.connectionStateChanged();
                 subscribeSocket.connected = true;
@@ -183,6 +185,13 @@ Singleton {
                     log.warn("Failed to parse request response:", line.substring(0, 100));
                     return;
                 }
+                if (response.apiVersion !== undefined) {
+                    root.apiVersion = response.apiVersion;
+                    root.capabilities = response.capabilities || [];
+                    log.info("Request socket greeting: API v" + root.apiVersion);
+                    root.capabilitiesReceived();
+                    return;
+                }
                 const isClipboard = clipboardRequestIds[response.id];
                 if (isClipboard)
                     delete clipboardRequestIds[response.id];
@@ -196,12 +205,11 @@ Singleton {
     DCommon.DSocket {
         id: subscribeSocket
         path: root.socketPath
-        connected: false
 
         onConnectionStateChanged: {
-            root.subscribeConnected = linkUp;
+            root.subscribeConnected = connected;
             root.mprisCommandLease = "";
-            if (!linkUp) {
+            if (!connected) {
                 root.connectionCapabilities = null;
                 return;
             }

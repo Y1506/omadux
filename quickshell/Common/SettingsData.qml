@@ -2254,7 +2254,7 @@ Singleton {
         return splitSettings;
     }
     function saveSettings() {
-        if (_loading || !_hasLoaded)
+        if (_loading)
             return;
         unsavedUserChanges = true;
         settingsSaveDebounce.restart();
@@ -3954,7 +3954,7 @@ Singleton {
             id: settingsFileView
 
             path: filePath
-            blockLoading: false
+            blockLoading: true
             blockWrites: true
             atomicWrites: true
             watchChanges: true
@@ -4140,11 +4140,17 @@ Singleton {
 
         Component.onCompleted: {
             _registerSettingsFile(defaultSettingsFile);
+            Qt.callLater(() => {
+                if (!_settingsFolderChecked) {
+                    _settingsFolderChecked = true;
+                    _tryCompleteDiscovery();
+                }
+            });
         }
     }
 
     property bool _settingsFolderExists: false
-    property bool _settingsFolderChecked: false
+    property bool _settingsFolderChecked: true
     function _syncSettingsFilesModels() {
         if (!_settingsFolderChecked) {
             settingsFilesModelSyncDebounce.restart();
@@ -4183,6 +4189,28 @@ Singleton {
     ListModel {
         id: settingsFilesListModel
     }
+    Component.onCompleted: {
+        Qt.callLater(() => {
+            if (!_settingsFolderChecked) {
+                _settingsFolderChecked = true;
+                _tryCompleteDiscovery();
+            }
+        });
+    }
+
+    Timer {
+        id: discoveryFallbackTimer
+        interval: 50
+        running: true
+        repeat: false
+        onTriggered: {
+            if (!_settingsFolderChecked) {
+                _settingsFolderChecked = true;
+                _tryCompleteDiscovery();
+            }
+        }
+    }
+
     Loader {
         id: settingsFolderLoader
         function unloadModel() {
@@ -4191,7 +4219,7 @@ Singleton {
         sourceComponent: FolderListModel {
             id: settingsFolderModel
 
-            property url dir: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/dms/config.d"
+            property url dir: "file://" + StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/dms/config.d"
 
             folder: dir
             showDirs: false
@@ -4200,6 +4228,10 @@ Singleton {
                 // Folder gets reset to the CWD if the directory doesn't exist.
                 _settingsFolderExists = folder == dir;
                 if (status !== FolderListModel.Ready) {
+                    if (status === FolderListModel.Null || status === FolderListModel.Error) {
+                        _settingsFolderChecked = true;
+                        _tryCompleteDiscovery();
+                    }
                     return;
                 }
                 _settingsFolderChecked = true;

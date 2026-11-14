@@ -1,7 +1,9 @@
-import QtQuick
-import "../DCommon/Common" as DCommon
+pragma ComponentBehavior: Bound
 
-DCommon.DSocket {
+import QtQuick
+import Quickshell.Io
+
+DSocket {
     id: shim
-    Component.onCompleted: Deprecation.type(shim, "DankSocket", "DSocket", "qs.DCommon.Common")
+    readonly property bool linkUp: connected
 }
